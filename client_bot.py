@@ -20,7 +20,7 @@ is_removing_ad = False
 def basic_callback_debug(update, context, command_name):
     print('command ' + command_name + ' received from chat with id ' + 
           str(update.message.chat_id) + ' and name ' + 
-          update.message.from_user.username)
+          str(update.message.from_user.username))
 
 def unimplemented_function(update):
     update.message.reply_text("This feature hasn't been implemented yet.")
@@ -57,8 +57,6 @@ def build_menu(buttons, n_cols, header_buttons=None, footer_buttons=None):
 # START Command - executed when the conversation starts
 def start(update, context):
     basic_callback_debug(update, context, command_name='start')
-    global mockup_db
-    mockup_db = AdvertisementDB('test.db')
 
     kb_buttons = [[KeyboardButton('/' + base_actions[0]), KeyboardButton('/' + base_actions[4])],
                 [KeyboardButton('/' + base_actions[5]), KeyboardButton('/' + base_actions[3])]]
@@ -83,27 +81,29 @@ def send_ad(update, context, advertisement):
     context.bot.send_message(update.message.chat_id, text=message, reply_markup=reply_markup)
 
 def new_ad_handler(update, context):
-    global is_writing_message
-    is_writing_message = True
+    global is_writing_ad
+    is_writing_ad = True
     update.message.reply_text("Please, write the message of your advertisement.")
 
-def add_new_ad(text):
-    mockup_db.add(text)
+def add_new_ad(update):
+    mockup_db.add(update.message.text)
+    update.message.reply_text("New add created.")
 
 def remove_ad_handler(update, context):
     global is_removing_ad
     is_removing_ad = True
 
-def remove_selected_ad(identifier):
-    mockup_db.remove(identifier)
+def remove_selected_ad(update):
+    mockup_db.remove(update.message.text)
+    update.message.reply_text("Advertisement removed.")
 
 def message_received_handler(update, context):
     global is_writing_ad
     global is_removing_ad
     if (is_writing_ad):
-        add_new_ad(update.message.text)
+        add_new_ad(update)
     elif (is_removing_ad):
-        remove_selected_ad(update.message.text)
+        remove_selected_ad(update)
     is_writing_ad = False
     is_removing_ad = False
 
@@ -129,7 +129,7 @@ def help_handler(update, context):
 def button_pressed_handler(update, context):
     query: CallbackQuery = update.callback_query
     print('user interacted with ' + query.message.text + ' and pressed ' + query.data +
-          ' button pressed by user ' + query.from_user.username)
+          ' button pressed by user ' + str(query.from_user.username))
 
 # PLACEHOLDER Command - unimplemented function
 def placeholder_handler(update, context):
@@ -140,6 +140,9 @@ def placeholder_handler(update, context):
 
 #region Main Method
 def main():
+    global mockup_db
+    mockup_db = AdvertisementDB('test.db')
+
     updater = Updater(str(API_KEY), 
                       use_context=True)
     dispatcher = updater.dispatcher

@@ -1,6 +1,5 @@
 import sqlite3
 
-
 class Advertisement:
     def __init__(self, message, identifier, owner_id):
         self.message = message
@@ -10,7 +9,6 @@ class Advertisement:
     def get_message(self):
         return self.message
 
-
 class AdvertisementDB():
 
     def __init__(self, file_path):
@@ -18,7 +16,7 @@ class AdvertisementDB():
         self.initialize_db()
 
     def initialize_db(self):
-        self.connection = sqlite3.connect(self.file_path)
+        self.connection = sqlite3.connect(self.file_path, check_same_thread=False)
         self.cursor = self.connection.cursor()
         self.cursor.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table'
                             AND name='advertisements' ''')
@@ -30,7 +28,7 @@ class AdvertisementDB():
         self.connection.commit()
 
     def get_all(self):
-        self.cursor.execute(''' select * from advertisements ''')
+        self.cursor.execute('''select * from advertisements''')
         ad_rows = self.cursor.fetchall()
         ads = []
         for row in ad_rows:

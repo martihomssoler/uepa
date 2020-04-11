@@ -7,16 +7,58 @@ API_KEY = open('../data/shop_secret.txt', 'r').read().strip()
 shop_actions: List[List[Union[str, Callable]]] = None
 mockup_advertisements_db = None
 mockup_users_db = None
+mockup_shop_db = None
+
+LOCATION, NAME, DESCRIPTION, CATEGORY = range(4)
+
+CATEGORY_LIST = ['Serveis generals', 'Alimentació', 'Hosteleria', 'Roba i Complements', 
+                 'Llar', 'Salut i benestar', 'Altres', 'Oci i Cultura']
 
 # region Helper Methods
 
 # adds the callback handlers of the bot # this is actually the logic and brains 
 # of the bot without handlers it cannot answer to any action done by the user
 def add_dispatcher_handlers(dispatcher):
-    dispatcher.add_handler(CommandHandler('start', start))
     # this handler should be for the inline ad buttons
     dispatcher.add_handler(CallbackQueryHandler(button_pressed_handler))
-    dispatcher.add_handler(MessageHandler(Filters.text, message_received_handler))
+    dispatcher.add_handler(MessageHandler(Filters.regex('^(' + get_actions() + 
+                       ')$'), message_received_handler))
+
+    # Add conversation handler with the states LOCATION, NAME, DESCRIPTION, CATEGORY
+    conv_handler = ConversationHandler(
+        entry_points=[CommandHandler('start', start), MessageHandler(Filters.regex('^(' + 
+                      emojize(':star2: Start', use_aliases=True) + ')$'), start)],
+
+        states={
+            LOCATION: [MessageHandler(Filters.location, set_location_handler_state)],
+            NAME: [MessageHandler(Filters.text, set_name_handler_state)],
+            DESCRIPTION: [MessageHandler(Filters.text, set_description_handler_state)],
+            CATEGORY: [MessageHandler(Filters.regex('^(' + get_categories(CATEGORY_LIST) + 
+                       '|Finalitzar)$'), set_category_handler_state)]
+        },
+
+        fallbacks=[CommandHandler('cancel', cancel_handler_state)]
+    )
+    dispatcher.add_handler(conv_handler)
+
+def get_actions():
+    actions = []
+    for [action, _] in shop_actions[:-1]:
+        actions.append(action)
+    return '|'.join(actions)
+
+def get_categories(cat_list):
+    return '|'.join(cat_list)
+
+def set_main_menu(update: Update, context: CallbackQuery):
+    kb_buttons = []
+    for [action, _] in shop_actions:
+        kb_buttons.append(KeyboardButton(action)) 
+    kb_buttons = build_menu(kb_buttons, 2)
+
+    kb_markup = ReplyKeyboardMarkup(kb_buttons)
+    context.bot.send_message(chat_id=update.message.chat_id, text='Selecciona una opció:',
+                             reply_markup=kb_markup)
 
 # endregion
 
@@ -27,14 +69,10 @@ def start(update: Update, context: CallbackQuery):
     basic_callback_debug(update, context, command_name='start')
     mockup_users_db.add(update.message.from_user.id)
 
-    kb_buttons = []
-    for [action, _] in shop_actions:
-        kb_buttons.append(KeyboardButton(action)) 
-    kb_buttons = build_menu(kb_buttons, 2)
+    #set_main_menu(update, context)
 
-    kb_markup = ReplyKeyboardMarkup(kb_buttons)
-    context.bot.send_message(chat_id=update.message.chat_id, text='Selecciona una opció:',
-                             reply_markup=kb_markup)
+    update.message.reply_text("Si us plau, envia la localització on es troba la seva botiga.")
+    return LOCATION
 
 # ADD Command - asks for the desired advertisement content message to be added
 def new_ad_handler(update: Update, context: CallbackQuery):
@@ -80,7 +118,6 @@ def message_received_handler(update: Update, context: CallbackQuery):
         remove_selected_ad(update)
         # the user has sent a message and the flags have to be unset
         unset_all_flags(update.message.from_user.id)
-    
 
 def unset_all_flags(user_id: int):
     mockup_users_db.unset_flag(user_id, UserFlags.FLAG_ADD)
@@ -106,6 +143,79 @@ def placeholder_handler(update: Update, context: CallbackQuery):
 
 # endregion
 
+# region Conversation States
+
+def set_location_handler_state(update: Update, context: CallbackQuery):
+    user = update.message.from_user
+    user_location = update.message.location
+    logging.info("Location of %s: %f / %f", user.first_name, user_location.latitude,
+                 user_location.longitude)
+    mockup_shop_db.add(user.id, user_location.longitude, user_location.latitude)
+    update.message.reply_text("Diga'ns quin nom te la seva botiga.")
+    return NAME
+
+def set_name_handler_state(update: Update, context: CallbackQuery):
+    user = update.message.from_user
+    shop_name = update.message.text
+    logging.info("The name of %s's shop is %s.", user.first_name, shop_name)
+    mockup_shop_db.set_name(user.id, shop_name)
+    update.message.reply_text("Descriu la seva botiga.")
+    return DESCRIPTION
+
+def set_description_handler_state(update: Update, context: CallbackQuery):
+    user = update.message.from_user
+    description = update.message.text
+    logging.info("The description of %s's shop is: %s.", user.first_name, description)
+    mockup_shop_db.set_description(user.id, description)
+
+    kb_buttons = []
+    for cat in CATEGORY_LIST:
+        kb_buttons.append(KeyboardButton(cat))
+    kb_buttons.append(KeyboardButton('Finalitzar'))
+    kb_buttons = build_menu(kb_buttons, 2)
+    kb_markup = ReplyKeyboardMarkup(kb_buttons)
+    
+    context.bot.send_message(chat_id=update.message.chat_id, 
+                             text="Selecciona les categories que mes escauen al teu negoci.",
+                             reply_markup=kb_markup)
+    return CATEGORY
+
+def set_category_handler_state(update: Update, context: CallbackQuery):
+    user = update.message.from_user
+    category = update.message.text
+
+    if (category == 'Finalitzar'):
+        kb_markup = ReplyKeyboardRemove()
+        context.bot.send_message(chat_id=update.message.chat_id, 
+                                text="Ja tenim tot el que necessitem. Benvingut a UEPA!",
+                                reply_markup=kb_markup)
+        set_main_menu(update, context)
+        return ConversationHandler.END
+    
+    category_list = mockup_shop_db.get(user.id)[5]
+    if (category_list != None and category in category_list):
+        if (category + ', ' in category_list):
+            category_list = category_list.replace(category + ', ', '')
+        elif (', ' + category in category_list):
+            category_list = category_list.replace(', ' + category, '')
+        else:
+            category_list = category_list.replace(category, '')
+        mockup_shop_db.set_categories(user.id, category_list)
+    else:
+        mockup_shop_db.add_category(user.id, category)
+    
+    update.message.reply_text("Categories: " + mockup_shop_db.get(user.id)[5])
+    return CATEGORY
+
+def cancel_handler_state(update: Update, context: CallbackQuery):
+    user = update.message.from_user
+    logging.info("User %s canceled the conversation.", user.first_name)
+    set_main_menu(update, context)
+    # TODO erase the info in the DB
+    return ConversationHandler.END
+
+# endregion
+
 # region Main Method
 
 def main():
@@ -114,15 +224,17 @@ def main():
     # in case the file does not exists it will create an empty table
     global mockup_advertisements_db
     global mockup_users_db
+    global mockup_shop_db
     mockup_advertisements_db = AdvertisementDB('../data/advertisement_test.db')
     mockup_users_db = UsersDB("../data/users_test.db")
+    mockup_shop_db = ShopDB("../data/shop_test.db")
 
     global shop_actions
     shop_actions = [[emojize(':heavy_plus_sign: Afegir', use_aliases=True), new_ad_handler], 
                     [emojize(':x: Borrar', use_aliases=True), remove_ad_handler], 
                     [emojize(':question: Ajuda', use_aliases=True), help_handler],
                     [emojize(':star2: Start', use_aliases=True), start]]
-
+    
     # connect to the API with the key inside the secret.txt file
     updater = Updater(str(API_KEY),
                       use_context=True)

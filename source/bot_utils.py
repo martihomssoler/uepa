@@ -1,11 +1,12 @@
 from typing import Callable, List, Union
-from telegram import KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, Update, ParseMode
-from telegram.ext import Updater, CommandHandler, MessageHandler, CallbackQueryHandler, Filters
+from telegram import KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, Update, ParseMode
+from telegram.ext import Updater, CommandHandler, MessageHandler, CallbackQueryHandler, Filters, ConversationHandler
 import requests
 import re
 import logging
 from advertisement_db import Advertisement, AdvertisementDB
 from users_db import UserFlags, UsersDB
+from shop_db import ShopDB
 from emoji import emojize
 
 # Simple function that helps me get a debug message on the bots console

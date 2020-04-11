@@ -3,7 +3,7 @@ from bot_utils import *
 API_KEY = open('../data/client_secret.txt', 'r').read().strip()
 
 client_actions: List[List[Union[str, Callable]]] = None
-ad_actions = ['contactar', 'feedback']
+ad_actions: List[List[Union[str, Callable]]] = None
 mockup_advertisements_db = None
 mockup_users_db = None
 
@@ -41,7 +41,7 @@ def get_ads_handler(update: Update, context: CallbackQuery):
     # Get a list of relevant ads for the user and generete messages for it
     ads = mockup_advertisements_db.get_all()
     if (ads == []):
-        update.message.reply_text("Maulauradament no hem pogut trobar cap anunci. " + 
+        update.message.reply_text("Malauradament no hem pogut trobar cap anunci. " + 
             "Contacta amb el teu comerç més proper i anima’l a usar <b>Uepa!</b>",
             parse_mode=ParseMode.HTML)
     else:
@@ -51,8 +51,9 @@ def get_ads_handler(update: Update, context: CallbackQuery):
 # given an advertisement it will send the advertisement message with its own
 # inline keyboard buttons
 def send_ad(update, context, advertisement):
-    ad_buttons = [InlineKeyboardButton(ad_actions[0], callback_data=ad_actions[0]),
-                  InlineKeyboardButton(ad_actions[1], callback_data=ad_actions[1])]
+    ad_buttons = []
+    for [action, _] in ad_actions:
+        ad_buttons.append(InlineKeyboardButton(action, callback_data=action))
 
     reply_markup = InlineKeyboardMarkup(build_menu(ad_buttons, n_cols=2))
     message = '[id:' + str(advertisement.id) + '] ' + advertisement.message
@@ -69,7 +70,7 @@ def message_received_handler(update: Update, context: CallbackQuery):
 # SEARCH Command - asks for an input text and returns a list of shops who meet the
 # desired searching criteria
 # [currently unimplemented]
-def search_handler(update, context):
+def search_handler(update: Update, context: CallbackQuery):
     basic_callback_debug(update, context, command_name='search')
     placeholder_handler(update, context)
 
@@ -82,6 +83,10 @@ def help_handler(update: Update, context: CallbackQuery):
 # ADVERTISEMENT INLINE BUTTONS - handler executed whenever an inlined button from an advertisement 
 # is interacted with
 def button_pressed_handler(update: Update, context: CallbackQuery):
+    for [action, handler] in client_actions:
+        if (update.message.text == action):
+            handler(update, context)
+            return
     query: CallbackQuery = update.callback_query
     print('user interacted with ' + query.message.text + ' and pressed ' + query.data +
           ' button pressed by user ' + str(query.from_user.username))
@@ -90,6 +95,12 @@ def button_pressed_handler(update: Update, context: CallbackQuery):
 def placeholder_handler(update: Update, context: CallbackQuery):
     print("Unimplemented placeholder")
     unimplemented_function(update)
+
+def contact_ad_owner(update: Update, context: CallbackQuery):
+    return
+
+def give_ad_feedback(update: Update, context: CallbackQuery):
+    return
 
 # endregion
 
@@ -109,6 +120,10 @@ def main():
                     [emojize(':mag: Cercar', use_aliases=True), search_handler], 
                     [emojize(':question: Ajuda', use_aliases=True), help_handler],
                     [emojize(':star2: Start', use_aliases=True), start]]
+
+    global ad_actions
+    ad_actions = [[emojize('contactar'), contact_ad_owner],
+                  [emojize('feedback'), give_ad_feedback]]
 
     # connect to the API with the key inside the secret.txt file
     updater = Updater(str(API_KEY),

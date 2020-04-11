@@ -28,7 +28,7 @@ div, p, span, li {
     background-image: linear-gradient(to bottom right, var(--main-color) 0%, var(--lighter-main-color) 100%);
     color: #FFFFFF;
     display: grid;
-    grid-template-rows: 16vh 64vh;
+    grid-template-rows: 12vh 68vh;
     grid-template-columns: 100%;
 }
 
@@ -61,13 +61,18 @@ div, p, span, li {
 }
 
 /* Presentation */
-
 .intro__presentation {
+    display: flex;
+}
+
+.intro__presentation-wrapper {
     font-size: 3rem;
-    padding: 0 5rem;
+    padding-left: 5rem;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 50%;
+    position: relative;
 }
 
 .presentation__text {
@@ -82,7 +87,17 @@ div, p, span, li {
 }
 
 .phone__img {
-    max-height: 100%;
+    position: absolute;
+    max-height: 105%;
+    max-width: 100%;
+    top: -1.5rem;
+}
+
+.presentation__img-wrapper {
+    width: 50%;
+}
+
+.presentation__img {
     max-width: 100%;
 }
 

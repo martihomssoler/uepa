@@ -1,0 +1,90 @@
+@import url('https://fonts.googleapis.com/css2?family=Karla&family=Poppins:wght@700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: auto;
+    font-family: 'Karla', sans-serif;
+    font-size: 10px;
+}
+
+div, p, span, li {
+    font-size: 1.6rem;
+}
+
+/** INTRO **/
+.intro {
+    height: 80vh;
+    width: 100vw;
+    background-image: linear-gradient(to bottom right, #43e97b 0%, #3BCC6B 100%);
+    color: #FFFFFF;
+    display: grid;
+    grid-template-rows: 20% 80%;
+    grid-template-columns: 100%;
+}
+
+/* Header */
+.intro__header {
+    width: 100%;
+    padding: 0px 5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header__logo {
+    display: flex;
+}
+
+.logo__img {
+
+}
+
+.logo__text {
+}
+
+.header__nav {
+
+}
+
+.nav__list {
+    list-style-type: none;
+    display: flex;
+    justify-content: space-between;
+    width: 20rem;
+}
+
+.nav__element {
+
+}
+
+/* Presentation */
+
+.intro__presentation {
+    font-size: 3rem;
+    padding: 0 5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.presentation__text {
+    font-family: 'Poppins', sans-serif;
+    width: 35rem;
+    margin-right: 5rem;
+}
+
+.presentation__phone {
+    height: 100%;
+}
+
+.phone__img {
+    height: 100%;
+}
+
+/** END INTRO **/
+

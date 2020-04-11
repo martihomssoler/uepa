@@ -1,4 +1,5 @@
-**/secret.txt
+**/client_secret.txt
+**/shop_secret.txt
 
 **/.vscode/**
 **/.vscode

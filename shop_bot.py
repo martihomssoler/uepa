@@ -1,9 +1,8 @@
 from bot_utils import *
 
-API_KEY = open('client_secret.txt', 'r').read().strip()
+API_KEY = open('shop_secret.txt', 'r').read().strip()
 
-client_actions = ['anuncis', 'cercar', 'ajuda']
-ad_actions = ['contactar', 'feedback']
+shop_actions = ['afegir', 'borrar', 'ajuda']
 mockup_advertisements_db = None
 mockup_users_db = None
 
@@ -13,9 +12,9 @@ mockup_users_db = None
 # of the bot without handlers it cannot answer to any action done by the user
 def add_dispatcher_handlers(dispatcher):
     dispatcher.add_handler(CommandHandler('start', start))
-    dispatcher.add_handler(CommandHandler(client_actions[0], get_ads_handler))
-    dispatcher.add_handler(CommandHandler(client_actions[1], search_handler))
-    dispatcher.add_handler(CommandHandler(client_actions[2], help_handler))
+    dispatcher.add_handler(CommandHandler(shop_actions[0], new_ad_handler))
+    dispatcher.add_handler(CommandHandler(shop_actions[1], remove_ad_handler))
+    dispatcher.add_handler(CommandHandler(shop_actions[2], help_handler))
     dispatcher.add_handler(CommandHandler('placeholder', placeholder_handler))
     # this handler should be for the inline ad buttons
     dispatcher.add_handler(CallbackQueryHandler(button_pressed_handler))
@@ -31,30 +30,11 @@ def start(update: Update, context: CallbackQuery):
     basic_callback_debug(update, context, command_name='start')
     mockup_users_db.add(update.message.from_user.id)
 
-    kb_buttons = [[KeyboardButton('/' + client_actions[0]), KeyboardButton('/' + client_actions[1])],
-                  [KeyboardButton('/start'), KeyboardButton('/' + client_actions[2])]]
+    kb_buttons = [[KeyboardButton('/' + shop_actions[0]), KeyboardButton('/' + shop_actions[1])],
+                  [KeyboardButton('/start'), KeyboardButton('/' + shop_actions[2])]]
     kb_markup = ReplyKeyboardMarkup(kb_buttons)
     context.bot.send_message(chat_id=update.message.chat_id, text='Selecciona una opció:',
                              reply_markup=kb_markup)
-
-# ADS Command - return a list of ads of interest to the user
-def get_ads_handler(update: Update, context: CallbackQuery):
-    basic_callback_debug(update, context, command_name=client_actions[0])
-    # Get a list of relevant ads for the user and generete messages for it
-    ads = mockup_advertisements_db.get_all()
-    for a in ads:
-        send_ad(update, context, a)
-
-# given an advertisement it will send the advertisement message with its own
-# inline keyboard buttons
-def send_ad(update, context, advertisement):
-    ad_buttons = [InlineKeyboardButton(ad_actions[0], callback_data=ad_actions[0]),
-                  InlineKeyboardButton(ad_actions[1], callback_data=ad_actions[1])]
-
-    reply_markup = InlineKeyboardMarkup(build_menu(ad_buttons, n_cols=2))
-    message = '[id:' + str(advertisement.id) + '] ' + advertisement.message
-    context.bot.send_message(update.message.chat_id,
-                             text=message, reply_markup=reply_markup)
 
 # ADD Command - asks for the desired advertisement content message to be added
 def new_ad_handler(update: Update, context: CallbackQuery):
@@ -99,17 +79,10 @@ def unset_all_flags(user_id: int):
     mockup_users_db.unset_flag(user_id, UserFlags.FLAG_ADD)
     mockup_users_db.unset_flag(user_id, UserFlags.FLAG_REMOVE)
 
-# SEARCH Command - asks for an input text and returns a list of shops who meet the
-# desired searching criteria
-# [currently unimplemented]
-def search_handler(update, context):
-    basic_callback_debug(update, context, command_name=client_actions[1])
-    placeholder_handler(update, context)
-
 # HELP Command - returns a pretty-printed list of commands and useful information
 # [currently unimplemented]
 def help_handler(update: Update, context: CallbackQuery):
-    basic_callback_debug(update, context, command_name=client_actions[2])
+    basic_callback_debug(update, context, command_name=shop_actions[2])
     placeholder_handler(update, context)
 
 # ADVERTISEMENT INLINE BUTTONS - handler executed whenever an inlined button from an advertisement 

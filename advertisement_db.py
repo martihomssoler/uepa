@@ -6,9 +6,6 @@ class Advertisement:
         self.id = identifier
         self.owner_id = owner_id
 
-    def get_message(self):
-        return self.message
-
 class AdvertisementDB():
 
     def __init__(self, file_path):
@@ -23,7 +20,7 @@ class AdvertisementDB():
         if (self.cursor.fetchone()[0] == 0):
             self.cursor.execute('''create table advertisements
                         (id integer primary key, advertisement_message text,
-                owner_id integer, date date)''')
+                         owner_id integer, date date)''')
 
         self.connection.commit()
 
@@ -49,3 +46,4 @@ class AdvertisementDB():
 
     def flush_db(self):
         self.cursor.execute(''' delete from advertisements; ''')
+        self.connection.commit()

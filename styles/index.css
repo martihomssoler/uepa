@@ -2,7 +2,7 @@
 
 :root {
     --main-color: #33B05D;
-    --lighter-main-color: #43E97B;
+    --lighter-main-color: #ADCF00;
 }
 
 * {
@@ -23,12 +23,12 @@ div, p, span, li {
 
 /** INTRO **/
 .intro {
-    height: 80vh;
+    height: 90vh;
     width: 100%;
     background-image: linear-gradient(to bottom right, var(--main-color) 0%, var(--lighter-main-color) 100%);
     color: #FFFFFF;
     display: grid;
-    grid-template-rows: 12vh 68vh;
+    grid-template-rows: 12vh 78vh;
     grid-template-columns: 100%;
 }
 
@@ -42,7 +42,7 @@ div, p, span, li {
 }
 
 .logo__img {
-    height: 10rem;
+    height: 6.5rem;
 }
 
 .header__nav {
@@ -66,20 +66,20 @@ div, p, span, li {
 }
 
 .intro__presentation-wrapper {
-    font-size: 3rem;
     padding-left: 5rem;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     width: 50%;
     position: relative;
 }
 
 .presentation__text {
+    font-size: 5rem;
     font-family: 'Montserrat', sans-serif;
-    width: 35rem;
-    margin-right: 5rem;
+    width: 70%;
     word-spacing: .25rem;
+    text-align: center;
 }
 
 .presentation__phone {
@@ -91,14 +91,13 @@ div, p, span, li {
     max-height: 105%;
     max-width: 100%;
     top: -1.5rem;
-}
-
-.presentation__img-wrapper {
-    width: 50%;
+    right: -12rem;
 }
 
 .presentation__img {
-    max-width: 100%;
+    width: 50%;
+    background-image: url(../public/img/introbg.jpg);
+    background-size: cover;
 }
 
 /** END INTRO **/

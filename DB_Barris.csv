@@ -1,0 +1,72 @@
+Districte,Codi de Barri,Barri,Latitud Barri,Longitud Barri
+Ciutat Vella,1,el Raval,41.3795176,2.1683678
+Ciutat Vella,2,el Barri Gòtic,41.3833947,2.1769119
+Ciutat Vella,3,la Barceloneta,41.3806533,2.1899274
+Eixample,5,el Fort Pienc,41.3959246,2.1823245
+Eixample,6,la Sagrada Família,41.4034789,2.1744103330097055
+Eixample,7,la Dreta de l'Eixample,41.3950373,2.1672069
+Eixample,8,l'Antiga Esquerra de l'Eixample,41.39,2.155
+Eixample,9,la Nova Esquerra de l'Eixample,41.383389,2.149
+Eixample,10,Sant Antoni,41.3784116,2.1617677
+Sants-Montjuïc,11,el Poble Sec,41.3749795,2.1605721
+Sants-Montjuïc,12,la Marina del Prat Vermell,41.3538419,2.1423184
+Sants-Montjuïc,13,la Marina de Port,41.3602964,2.1375842
+Sants-Montjuïc,14,la Font de la Guatlla,41.3707824,2.1446756
+Sants-Montjuïc,15,Hostafrancs,41.3750877,2.1429334
+Sants-Montjuïc,16,la Bordeta,41.3691417,2.1373733
+Sants-Montjuïc,17,Sants - Badal,41.375466,2.1277096
+Sants-Montjuïc,18,Sants,41.3753288,2.1349117
+Les Corts,19,les Corts,41.385244,2.1328626
+Les Corts,20,la Maternitat i Sant Ramon,41.381975049999994,2.115473637544033
+Les Corts,21,Pedralbes,41.3901401,2.112218
+Sarrià-Sant Gervasi,23,Sarrià,41.399373,2.1215125
+Sarrià-Sant Gervasi,24,les Tres Torres,41.3976108,2.1311837
+Sarrià-Sant Gervasi,25,Sant Gervasi - la Bonanova,41.4096367,2.1296368239861
+Sarrià-Sant Gervasi,26,Sant Gervasi - Galvany,41.39780705,2.143379993225907
+Sarrià-Sant Gervasi,27,el Putxet i el Farró,41.4074756,2.143283241998689
+Gràcia,28,Vallcarca i els Penitents,41.415712150000004,2.1414692584443396
+Gràcia,29,el Coll,41.6512892,1.9584116
+Gràcia,30,la Salut,41.411866,2.1539614
+Gràcia,31,la Vila de Gràcia,41.4031783,2.1571662
+Gràcia,32,el Camp d'en Grassot i Gràcia Nova,41.406705650000006,2.1654191419944855
+Horta-Guinardó,33,el Baix Guinardó,41.411440799999994,2.1685096157150996
+Horta-Guinardó,34,Can Baró,41.4169656,2.1626934115256335
+Horta-Guinardó,35,el Guinardó,41.4177335,2.1736316
+Horta-Guinardó,36,la Font d'en Fargues,41.424363799999995,2.165319717491786
+Horta-Guinardó,37,el Carmel,41.425591,2.1549587
+Horta-Guinardó,38,la Teixonera,41.423173,2.1459698
+Horta-Guinardó,39,Sant Genís dels Agudells,41.4264567,2.1374905
+Horta-Guinardó,40,Montbau,41.4295504,2.1445379
+Horta-Guinardó,41,la Vall d'Hebron,41.4247893,2.1423174
+Horta-Guinardó,42,la Clota,41.42864605,2.1535200646029855
+Horta-Guinardó,43,Horta,41.4330206,2.1590883
+Nou Barris,44,Vilapicina i la Torre Llobeta,41.4282072,2.174092558463692
+Nou Barris,45,Porta,41.4348981,2.178005781728962
+Nou Barris,46,el Turó de la Peira,41.43278415,2.1683023231058653
+Nou Barris,47,Can Peguera,41.4349282,2.1665482903273894
+Nou Barris,48,la Guineueta,41.43903155,2.1685445311625853
+Nou Barris,49,Canyelles,41.2858273,1.7222743
+Nou Barris,50,les Roquetes,41.448881650000004,2.174841336663372
+Nou Barris,51,Verdun,41.442438249999995,2.175299277185351
+Nou Barris,52,la Prosperitat,41.4426463,2.1822569579157225
+Nou Barris,53,la Trinitat Nova,41.4495072,2.1826925
+Nou Barris,54,Torre Baró,41.4537005,2.1740224412212212
+Nou Barris,55,Ciutat Meridiana,41.461635799999996,2.1768165443251277
+Nou Barris,56,Vallbona,41.5194769,1.7082922
+Sant Andreu,57,la Trinitat Vella,41.4545077,2.191687314996744
+Sant Andreu,58,Baró de Viver,41.44593355,2.19878770617065
+Sant Andreu,59,el Bon Pastor,41.4361096,2.2048066
+Sant Andreu,60,Sant Andreu,41.43743905,2.196859449001088
+Sant Andreu,61,la Sagrera,41.4237499,2.189582
+Sant Andreu,62,el Congrés i els Indians,41.4237161,2.1808514441503632
+Sant Andreu,63,Navas,41.8989233,1.8767736
+Sant Martí,64,el Camp de l'Arpa del Clot,41.4107542,2.1828156
+Sant Martí,65,el Clot,41.4099525,2.1908234
+Sant Martí,66,el Parc i la Llacuna del Poblenou,41.4007334,2.191342
+Sant Martí,67,la Vila Olímpica del Poblenou,41.38980905,2.195555314357464
+Sant Martí,68,el Poblenou,41.400527,2.2017292
+Sant Martí,69,Diagonal Mar i el Front Marítim del Poblenou,41.403173,2.2133799827409444
+Sant Martí,70,el Besòs i el Maresme,41.4149787,2.2138765
+Sant Martí,71,Provençals del Poblenou,41.412360250000006,2.2048853341819434
+Sant Martí,72,Sant Martí de Provençals,41.4165186,2.1989683
+Sant Martí,73,la Verneda i la Pau,41.4232198,2.202940152045822

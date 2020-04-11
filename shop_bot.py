@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
+
 from bot_utils import *
 
 API_KEY = open('shop_secret.txt', 'r').read().strip()
 
-shop_actions = ['afegir', 'borrar', 'ajuda']
+shop_actions: List[List[Union[str, Callable]]] = None
 mockup_advertisements_db = None
 mockup_users_db = None
 
@@ -12,14 +14,9 @@ mockup_users_db = None
 # of the bot without handlers it cannot answer to any action done by the user
 def add_dispatcher_handlers(dispatcher):
     dispatcher.add_handler(CommandHandler('start', start))
-    dispatcher.add_handler(CommandHandler(shop_actions[0], new_ad_handler))
-    dispatcher.add_handler(CommandHandler(shop_actions[1], remove_ad_handler))
-    dispatcher.add_handler(CommandHandler(shop_actions[2], help_handler))
-    dispatcher.add_handler(CommandHandler('placeholder', placeholder_handler))
     # this handler should be for the inline ad buttons
     dispatcher.add_handler(CallbackQueryHandler(button_pressed_handler))
-    dispatcher.add_handler(MessageHandler(
-        Filters.text, message_received_handler))
+    dispatcher.add_handler(MessageHandler(Filters.text, message_received_handler))
 
 # endregion
 
@@ -30,8 +27,11 @@ def start(update: Update, context: CallbackQuery):
     basic_callback_debug(update, context, command_name='start')
     mockup_users_db.add(update.message.from_user.id)
 
-    kb_buttons = [[KeyboardButton('/' + shop_actions[0]), KeyboardButton('/' + shop_actions[1])],
-                  [KeyboardButton('/start'), KeyboardButton('/' + shop_actions[2])]]
+    kb_buttons = []
+    for [action, _] in shop_actions:
+        kb_buttons.append(KeyboardButton(action)) 
+    kb_buttons = build_menu(kb_buttons, 2)
+
     kb_markup = ReplyKeyboardMarkup(kb_buttons)
     context.bot.send_message(chat_id=update.message.chat_id, text='Selecciona una opció:',
                              reply_markup=kb_markup)
@@ -39,27 +39,34 @@ def start(update: Update, context: CallbackQuery):
 # ADD Command - asks for the desired advertisement content message to be added
 def new_ad_handler(update: Update, context: CallbackQuery):
     mockup_users_db.set_flag(update.message.from_user.id, UserFlags.FLAG_ADD)
-    update.message.reply_text( "Please, write the message of your advertisement.")
+    update.message.reply_text(
+        "Si us plau, escriviu el contingut del nou anunci que voleu crear.")
 
 # get the content of the current message as the advertisement message to be created
 def add_new_ad(update):
     mockup_advertisements_db.add(update.message.text)
     # TODO check if an advertisement was indeed created
-    update.message.reply_text("New add created.")
+    update.message.reply_text("Nou anunci creat!")
 
 # REMOVE Command - asks for the desired advertisement id to be removed
 def remove_ad_handler(update: Update, context: CallbackQuery):
     mockup_users_db.set_flag(update.message.from_user.id, UserFlags.FLAG_REMOVE)
-    update.message.reply_text( "Please, write the advertisement id to be removed.")
+    update.message.reply_text(
+        "Si us plau, escriviu l'identificador de l'anunci que voleu eliminar.")
 
 # get the content of the current message as the advertisement ID to be removed
 def remove_selected_ad(update):
     mockup_advertisements_db.remove(update.message.text)
     # TODO check if an advertisement was indeed removed
-    update.message.reply_text("Advertisement removed.")
+    update.message.reply_text("Anunci eliminat!")
 
 # MESSAGE RECEIVED - handler executed whenever a TEXT message is received from the user
 def message_received_handler(update: Update, context: CallbackQuery):
+    for [action, handler] in shop_actions:
+        if (update.message.text == action):
+            handler(update, context)
+            return
+
     # if the bot was waiting to receive the content of a new advertisement
     # then it will use the message content to create a new ad
     if (mockup_users_db.get_flag(update.message.from_user.id, UserFlags.FLAG_ADD)):
@@ -82,7 +89,7 @@ def unset_all_flags(user_id: int):
 # HELP Command - returns a pretty-printed list of commands and useful information
 # [currently unimplemented]
 def help_handler(update: Update, context: CallbackQuery):
-    basic_callback_debug(update, context, command_name=shop_actions[2])
+    basic_callback_debug(update, context, command_name='help')
     placeholder_handler(update, context)
 
 # ADVERTISEMENT INLINE BUTTONS - handler executed whenever an inlined button from an advertisement 
@@ -109,6 +116,12 @@ def main():
     global mockup_users_db
     mockup_advertisements_db = AdvertisementDB('advertisement_test.db')
     mockup_users_db = UsersDB("users_test.db")
+
+    global shop_actions
+    shop_actions = [[emojize(':heavy_plus_sign: Afegir', use_aliases=True), new_ad_handler], 
+                    [emojize(':x: Borrar', use_aliases=True), remove_ad_handler], 
+                    [emojize(':question: Ajuda', use_aliases=True), help_handler],
+                    [emojize(':star2: Start', use_aliases=True), start]]
 
     # connect to the API with the key inside the secret.txt file
     updater = Updater(str(API_KEY),

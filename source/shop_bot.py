@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
+
 from bot_utils import *
 
-API_KEY = open('client_secret.txt', 'r').read().strip()
+API_KEY = open('../data/shop_secret.txt', 'r').read().strip()
 
-client_actions: List[List[Union[str, Callable]]] = None
-ad_actions = ['contactar', 'feedback']
+shop_actions: List[List[Union[str, Callable]]] = None
 mockup_advertisements_db = None
 mockup_users_db = None
 
@@ -27,7 +28,7 @@ def start(update: Update, context: CallbackQuery):
     mockup_users_db.add(update.message.from_user.id)
 
     kb_buttons = []
-    for [action, _] in client_actions:
+    for [action, _] in shop_actions:
         kb_buttons.append(KeyboardButton(action)) 
     kb_buttons = build_menu(kb_buttons, 2)
 
@@ -35,43 +36,55 @@ def start(update: Update, context: CallbackQuery):
     context.bot.send_message(chat_id=update.message.chat_id, text='Selecciona una opció:',
                              reply_markup=kb_markup)
 
-# ADS Command - return a list of ads of interest to the user
-def get_ads_handler(update: Update, context: CallbackQuery):
-    basic_callback_debug(update, context, command_name='get ads')
-    # Get a list of relevant ads for the user and generete messages for it
-    ads = mockup_advertisements_db.get_all()
-    if (ads == []):
-        update.message.reply_text("Maulauradament no hem pogut trobar cap anunci. " + 
-            "Contacta amb el teu comerç més proper i anima’l a usar <b>Uepa!</b>",
-            parse_mode=ParseMode.HTML)
-    else:
-        for a in ads:
-            send_ad(update, context, a)
+# ADD Command - asks for the desired advertisement content message to be added
+def new_ad_handler(update: Update, context: CallbackQuery):
+    mockup_users_db.set_flag(update.message.from_user.id, UserFlags.FLAG_ADD)
+    update.message.reply_text(
+        "Si us plau, escriviu el contingut del nou anunci que voleu crear.")
 
-# given an advertisement it will send the advertisement message with its own
-# inline keyboard buttons
-def send_ad(update, context, advertisement):
-    ad_buttons = [InlineKeyboardButton(ad_actions[0], callback_data=ad_actions[0]),
-                  InlineKeyboardButton(ad_actions[1], callback_data=ad_actions[1])]
+# get the content of the current message as the advertisement message to be created
+def add_new_ad(update):
+    mockup_advertisements_db.add(update.message.text)
+    # TODO check if an advertisement was indeed created
+    update.message.reply_text("Nou anunci creat!")
 
-    reply_markup = InlineKeyboardMarkup(build_menu(ad_buttons, n_cols=2))
-    message = '[id:' + str(advertisement.id) + '] ' + advertisement.message
-    context.bot.send_message(update.message.chat_id,
-                             text=message, reply_markup=reply_markup)
+# REMOVE Command - asks for the desired advertisement id to be removed
+def remove_ad_handler(update: Update, context: CallbackQuery):
+    mockup_users_db.set_flag(update.message.from_user.id, UserFlags.FLAG_REMOVE)
+    update.message.reply_text(
+        "Si us plau, escriviu l'identificador de l'anunci que voleu eliminar.")
+
+# get the content of the current message as the advertisement ID to be removed
+def remove_selected_ad(update):
+    mockup_advertisements_db.remove(update.message.text)
+    # TODO check if an advertisement was indeed removed
+    update.message.reply_text("Anunci eliminat!")
 
 # MESSAGE RECEIVED - handler executed whenever a TEXT message is received from the user
-def message_received_handler(update: Update, context: CallbackQuery):    
-    for [action, handler] in client_actions:
+def message_received_handler(update: Update, context: CallbackQuery):
+    for [action, handler] in shop_actions:
         if (update.message.text == action):
             handler(update, context)
             return
 
-# SEARCH Command - asks for an input text and returns a list of shops who meet the
-# desired searching criteria
-# [currently unimplemented]
-def search_handler(update, context):
-    basic_callback_debug(update, context, command_name='search')
-    placeholder_handler(update, context)
+    # if the bot was waiting to receive the content of a new advertisement
+    # then it will use the message content to create a new ad
+    if (mockup_users_db.get_flag(update.message.from_user.id, UserFlags.FLAG_ADD)):
+        add_new_ad(update)
+        # the user has sent a message and the flags have to be unset
+        unset_all_flags(update.message.from_user.id)
+
+    # if the bot was waiting to receive the advertisement id of the advertisement to be removed
+    # then it will use the message content as the ID to remove the ad
+    elif (mockup_users_db.get_flag(update.message.from_user.id, UserFlags.FLAG_REMOVE)):
+        remove_selected_ad(update)
+        # the user has sent a message and the flags have to be unset
+        unset_all_flags(update.message.from_user.id)
+    
+
+def unset_all_flags(user_id: int):
+    mockup_users_db.unset_flag(user_id, UserFlags.FLAG_ADD)
+    mockup_users_db.unset_flag(user_id, UserFlags.FLAG_REMOVE)
 
 # HELP Command - returns a pretty-printed list of commands and useful information
 # [currently unimplemented]
@@ -101,12 +114,12 @@ def main():
     # in case the file does not exists it will create an empty table
     global mockup_advertisements_db
     global mockup_users_db
-    mockup_advertisements_db = AdvertisementDB('advertisement_test.db')
-    mockup_users_db = UsersDB("users_test.db")
+    mockup_advertisements_db = AdvertisementDB('../data/advertisement_test.db')
+    mockup_users_db = UsersDB("../data/users_test.db")
 
-    global client_actions
-    client_actions = [[emojize(':newspaper: Anuncis', use_aliases=True), get_ads_handler], 
-                    [emojize(':mag: Cercar', use_aliases=True), search_handler], 
+    global shop_actions
+    shop_actions = [[emojize(':heavy_plus_sign: Afegir', use_aliases=True), new_ad_handler], 
+                    [emojize(':x: Borrar', use_aliases=True), remove_ad_handler], 
                     [emojize(':question: Ajuda', use_aliases=True), help_handler],
                     [emojize(':star2: Start', use_aliases=True), start]]
 

@@ -3,6 +3,8 @@
 :root {
     --main-color: #33B05D;
     --lighter-main-color: #ADCF00;
+    --text-white: #FFFFFF;
+    --shadow: rgba(0, 0, 0, .2);
 }
 
 * {
@@ -17,8 +19,14 @@ html, body {
     font-size: 10px;
 }
 
-div, p, span, li {
+div, p, span {
     font-size: 1.6rem;
+}
+
+li {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.8rem;
+    text-transform: uppercase;
 }
 
 /** INTRO **/
@@ -26,7 +34,7 @@ div, p, span, li {
     height: 90vh;
     width: 100%;
     background-image: linear-gradient(to bottom right, var(--main-color) 0%, var(--lighter-main-color) 100%);
-    color: #FFFFFF;
+    color: var(--text-white);
     display: grid;
     grid-template-rows: 12vh 78vh;
     grid-template-columns: 100%;
@@ -53,11 +61,17 @@ div, p, span, li {
     list-style-type: none;
     display: flex;
     justify-content: space-between;
-    width: 20rem;
+    width: 25rem;
 }
 
 .nav__element {
 
+}
+
+.nav__link {
+    color: var(--text-white);
+    text-decoration: none;
+    text-shadow: 0px 0px 5px var(--shadow);
 }
 
 /* Presentation */
@@ -91,7 +105,7 @@ div, p, span, li {
     max-height: 105%;
     max-width: 100%;
     top: -1.5rem;
-    right: -12rem;
+    right: -15rem;
 }
 
 .presentation__img {
@@ -104,35 +118,39 @@ div, p, span, li {
 
 /** KEY POINTS **/
 .key-points {
-    padding: 5rem;
+    padding: 3rem 5rem;
     display: grid;
-    grid-template-columns: repeat(2, 50%);
-    grid-template-rows: repeat(4, 25%);
+    grid-template-columns: repeat(10, 10%);
+    grid-template-rows: repeat(6, 100px);
+}
+
+.key-points__section-title {
+    color: var(--main-color);
+    grid-column: 1 / span 10;
+    font-size: 3rem;
+    text-align: center;
 }
 
 .key-points__point {
-    padding: 2rem 4rem 2rem 2rem;
     grid-row-end: span 2;
 }
 
 .point__what {
-    grid-row-start: 1;
-    grid-column: 1 / 1;
+    grid-row-start: 2;
+    grid-column: 2 / span 3;
 }
 
 .point__why {
-    grid-row-start: 2;
-    grid-column: 2 / 2;
-    padding: 2rem 2rem 2rem 4rem;
+    grid-row-start: 3;
+    grid-column: 7 / span 3;
 }
 
 .point__who {
-    grid-row-start: 3;
-    grid-column: 1 / 1;
+    grid-row-start: 5;
+    grid-column: 2 / span 3;
 }
 
 .point__title {
     font-family: 'Poppins', sans-serif;
-    color: var(--main-color)
 }
 

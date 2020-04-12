@@ -25,10 +25,10 @@ class UsersDB():
                                 'latitude real )')
         self.connection.commit()
 
-    def add(self, user_id: int):
+    def add(self, identifier: int):
         self.cursor.execute('insert into users (id, ' + UserFlags.FLAG_ADD.name + ', ' +
                              UserFlags.FLAG_REMOVE.name + ') values (?, False, False)', 
-                             (user_id,))
+                             (identifier,))
         self.connection.commit()
     
     def remove(self, identifier: int):

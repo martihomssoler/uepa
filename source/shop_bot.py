@@ -146,6 +146,7 @@ def placeholder_handler(update: Update, context: CallbackQuery):
 
 def start_handler_state(update: Update, context: CallbackQuery):
     basic_callback_debug(update, context, command_name='start')
+    print('user id: ' + str(update.message.from_user.id))
     mockup_users_db.add(update.message.from_user.id)
     kb_markup = ReplyKeyboardRemove()
     context.bot.send_message(chat_id=update.message.chat_id, 

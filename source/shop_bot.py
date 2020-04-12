@@ -10,6 +10,7 @@ mockup_users_db = None
 mockup_shop_db = None
 
 LOCATION, NAME, DESCRIPTION, CATEGORY = range(4)
+AD_DESCRIPTION = range(1)
 
 CATEGORY_LIST = ['Serveis generals', 'Alimentació', 'Hosteleria', 'Roba i Complements', 
                  'Llar', 'Salut i benestar', 'Altres', 'Oci i Cultura']
@@ -41,17 +42,13 @@ def add_dispatcher_handlers(dispatcher):
     )
     dispatcher.add_handler(login_conversation_handler)
 
-    # Add conversation handler with the states LOCATION, NAME, DESCRIPTION, CATEGORY
+    # Add conversation handler with the states AD_DESCRIPTION
     ad_creation_conversation_handler = ConversationHandler(
         entry_points=[MessageHandler(Filters.regex('^(' + emojize(':heavy_plus_sign: Afegir', 
-                      use_aliases=True) + ')$'), new_ad_handler)],
+                      use_aliases=True) + ')$'), ad_creation_handler_state)],
 
         states={
-            LOCATION: [MessageHandler(Filters.location, set_location_handler_state)],
-            NAME: [MessageHandler(Filters.text, set_name_handler_state)],
-            DESCRIPTION: [MessageHandler(Filters.text, set_description_handler_state)],
-            CATEGORY: [MessageHandler(Filters.regex('^(' + get_categories(CATEGORY_LIST) + 
-                       '|Finalitzar)$'), set_category_handler_state)]
+            AD_DESCRIPTION: [MessageHandler(Filters.text, add_description_handler_state)]
         },
 
         fallbacks=[CommandHandler('cancel', cancel_handler_state)]
@@ -93,18 +90,6 @@ def start(update: Update, context: CallbackQuery):
     update.message.reply_text("Si us plau, envia la localització on es troba la seva botiga.")
     return LOCATION
 
-# ADD Command - asks for the desired advertisement content message to be added
-def new_ad_handler(update: Update, context: CallbackQuery):
-    mockup_users_db.set_flag(update.message.from_user.id, UserFlags.FLAG_ADD)
-    update.message.reply_text(
-        "Si us plau, escriviu el contingut del nou anunci que voleu crear.")
-
-# get the content of the current message as the advertisement message to be created
-def add_new_ad(update: Update, context: CallbackQuery):
-    mockup_advertisements_db.add(update.message.from_user.id, update.message.text)
-    # TODO check if an advertisement was indeed created
-    update.message.reply_text("Nou anunci creat!")
-
 # REMOVE Command - asks for the desired advertisement id to be removed
 def remove_ad_handler(update: Update, context: CallbackQuery):
     mockup_users_db.set_flag(update.message.from_user.id, UserFlags.FLAG_REMOVE)
@@ -127,7 +112,7 @@ def message_received_handler(update: Update, context: CallbackQuery):
     # if the bot was waiting to receive the content of a new advertisement
     # then it will use the message content to create a new ad
     if (mockup_users_db.get_flag(update.message.from_user.id, UserFlags.FLAG_ADD)):
-        add_new_ad(update, context)
+        add_description_handler_state(update, context)
         # the user has sent a message and the flags have to be unset
         unset_all_flags(update.message.from_user.id)
 
@@ -235,6 +220,20 @@ def cancel_handler_state(update: Update, context: CallbackQuery):
 
 # endregion
 
+# ADD Command - asks for the desired advertisement content message to be added
+def ad_creation_handler_state(update: Update, context: CallbackQuery):
+    mockup_users_db.set_flag(update.message.from_user.id, UserFlags.FLAG_ADD)
+    update.message.reply_text(
+        "Si us plau, escriviu el contingut del nou anunci que voleu crear.")
+    return AD_DESCRIPTION
+
+# get the content of the current message as the advertisement message to be created
+def add_description_handler_state(update: Update, context: CallbackQuery):
+    mockup_advertisements_db.add(update.message.from_user.id, update.message.text)
+    # TODO check if an advertisement was indeed created
+    update.message.reply_text("Nou anunci creat!")
+    return ConversationHandler.END
+
 # region Ad Creation Conversation States
 
 # endregion
@@ -253,7 +252,7 @@ def main():
     mockup_shop_db = ShopDB("../data/shop_test.db")
 
     global shop_actions
-    shop_actions = [[emojize(':heavy_plus_sign: Afegir', use_aliases=True), new_ad_handler], 
+    shop_actions = [[emojize(':heavy_plus_sign: Afegir', use_aliases=True), ad_creation_handler_state], 
                     [emojize(':x: Borrar', use_aliases=True), remove_ad_handler], 
                     [emojize(':question: Ajuda', use_aliases=True), help_handler],
                     [emojize(':star2: Start', use_aliases=True), start]]

@@ -21,7 +21,8 @@ class UsersDB():
                             AND name='users' ''')
         if (self.cursor.fetchone()[0] == 0):
             self.cursor.execute('create table users (id integer, ' + UserFlags.FLAG_ADD.name + 
-                                ' boolean, ' + UserFlags.FLAG_REMOVE.name + ' boolean)')
+                                ' boolean, ' + UserFlags.FLAG_REMOVE.name + ' boolean, longitude real, ' + 
+                                'latitude real )')
         self.connection.commit()
 
     def add(self, user_id: int):
@@ -32,6 +33,11 @@ class UsersDB():
     
     def remove(self, identifier: int):
         self.cursor.execute('''delete from users where id=?''', (identifier,))
+        self.connection.commit()
+
+    def set_location(self, identifier: int, longitude: float, latitude: float):
+        self.cursor.execute('insert into users (id, longitude, latitude) values (?, ?, ?)', 
+                            (identifier, longitude, latitude))
         self.connection.commit()
 
     def set_flag(self, userid: int, flag: UserFlags):

@@ -7,25 +7,30 @@ ad_actions: List[List[Union[str, Callable]]] = None
 mockup_advertisements_db = None
 mockup_users_db = None
 
+LOCATION = range(1)
+
 # region Helper Methods
 
 # adds the callback handlers of the bot # this is actually the logic and brains 
 # of the bot without handlers it cannot answer to any action done by the user
 def add_dispatcher_handlers(dispatcher):
-    dispatcher.add_handler(CommandHandler('start', start))
     # this handler should be for the inline ad buttons
     dispatcher.add_handler(CallbackQueryHandler(button_pressed_handler))
     dispatcher.add_handler(MessageHandler(Filters.text, message_received_handler))
 
-# endregion
+    # Add conversation handler with the states LOCATION, NAME, DESCRIPTION, CATEGORY
+    login_conversation_handler = ConversationHandler(
+        entry_points=[CommandHandler('start', start_login_handler_state)],
 
-# region Commands
+        states={
+            LOCATION: [MessageHandler(Filters.location, set_location_handler_state)]
+        },
 
-# START Command - executed when the conversation starts
-def start(update: Update, context: CallbackQuery):
-    basic_callback_debug(update, context, command_name='start')
-    mockup_users_db.add(update.message.from_user.id)
+        fallbacks=[CommandHandler('cancel', cancel_handler_state)]
+    )
+    dispatcher.add_handler(login_conversation_handler)
 
+def set_main_menu(update: Update, context: CallbackQuery):
     kb_buttons = []
     for [action, _] in client_actions:
         kb_buttons.append(KeyboardButton(action)) 
@@ -34,6 +39,15 @@ def start(update: Update, context: CallbackQuery):
     kb_markup = ReplyKeyboardMarkup(kb_buttons)
     context.bot.send_message(chat_id=update.message.chat_id, text='Selecciona una opció:',
                              reply_markup=kb_markup)
+
+# endregion
+
+# region Commands
+
+# START Command - executed when the conversation starts
+def start(update: Update, context: CallbackQuery):
+    basic_callback_debug(update, context, command_name='start')
+    set_main_menu(update, context)
 
 # ADS Command - return a list of ads of interest to the user
 def get_ads_handler(update: Update, context: CallbackQuery):
@@ -53,13 +67,13 @@ def get_ads_handler(update: Update, context: CallbackQuery):
 def send_ad(update, context, advertisement):
     ad_buttons = []
     for [action, _] in ad_actions:
-        ad_buttons.append(InlineKeyboardButton(action, callback_data=action))
+        cb_data = str([action, advertisement.id]).strip('[]')
+        ad_buttons.append(InlineKeyboardButton(action, callback_data=cb_data))
 
     reply_markup = InlineKeyboardMarkup(build_menu(ad_buttons, n_cols=2))
     message = '[id:' + str(advertisement.id) + '] ' + advertisement.message
     context.bot.send_message(update.message.chat_id,
                              text=message, reply_markup=reply_markup)
-
 
 # SEARCH Command - asks for an input text and returns a list of shops who meet the
 # desired searching criteria
@@ -152,13 +166,16 @@ def message_received_handler(update: Update, context: CallbackQuery):
 # ADVERTISEMENT INLINE BUTTONS - handler executed whenever an inlined button from an advertisement 
 # is interacted with
 def button_pressed_handler(update: Update, context: CallbackQuery):
-    for [action, handler] in client_actions:
-        if (update.message.text == action):
-            handler(update, context)
-            return
     query: CallbackQuery = update.callback_query
     print('user interacted with ' + query.message.text + ' and pressed ' + query.data +
           ' button pressed by user ' + str(query.from_user.username))
+
+    # gets the action of the button {contactar, feedback}    
+    action_data = query.data.split(', ')[0].replace("'", "")
+    for [action, handler] in ad_actions:
+        if (action_data == action):
+            handler(update, context)
+            return
 
 # PLACEHOLDER Command - unimplemented function
 def placeholder_handler(update: Update, context: CallbackQuery):
@@ -166,10 +183,39 @@ def placeholder_handler(update: Update, context: CallbackQuery):
     unimplemented_function(update)
 
 def contact_ad_owner(update: Update, context: CallbackQuery):
+    query: CallbackQuery = update.callback_query
+    advertisement_id = query.data.split(', ')[1]
+    print(mockup_advertisements_db.get(advertisement_id).owner_id)
+    from_chat_id = query.message.chat.id
+    message_id = query.message.message_id
+    context.bot.forward_message(from_chat_id, from_chat_id, message_id)
     return
 
 def give_ad_feedback(update: Update, context: CallbackQuery):
     return
+
+# endregion
+
+# region Login Conversation States
+def start_login_handler_state(update: Update, context: CallbackQuery):
+    basic_callback_debug(update, context, command_name='start')
+    update.message.reply_text("Diga'ns quin nom te la seva botiga.")
+    return LOCATION
+
+def set_location_handler_state(update: Update, context: CallbackQuery):
+    user = update.message.from_user
+    user_location = update.message.location
+    logging.info("Location of %s: %f / %f", user.first_name, user_location.latitude,
+                 user_location.longitude)
+    mockup_users_db.set_location(update.message.from_user.id, user_location.longitude, user_location.latitude)
+    return ConversationHandler.END
+
+def cancel_handler_state(update: Update, context: CallbackQuery):
+    user = update.message.from_user
+    logging.info("User %s canceled the conversation.", user.first_name)
+    set_main_menu(update, context)
+    # TODO erase the info in the DB
+    return ConversationHandler.END
 
 # endregion
 

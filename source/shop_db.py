@@ -18,9 +18,9 @@ class ShopDB():
                                 'latitude real, name text, description text, categories text)')
         self.connection.commit()
 
-    def add(self, shop_id: int, longitud: float, latitud: float):
+    def add(self, shop_id: int, longitude: float, latitude: float):
         self.cursor.execute('insert into shops (id, longitude, latitude) values (?, ?, ?)', 
-                             (shop_id, longitud, latitud))
+                             (shop_id, longitude, latitude))
         self.connection.commit()
     
     def set_name(self, shop_id: int, name: str):

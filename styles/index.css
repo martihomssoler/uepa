@@ -245,6 +245,7 @@ span {
     display: flex;
     margin-top: 1rem;
     margin-bottom: 3rem;
+    user-select: none;
 }
 
 .selector__element {

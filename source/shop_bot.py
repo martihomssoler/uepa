@@ -44,7 +44,7 @@ def add_dispatcher_handlers(dispatcher):
 
     # Add conversation handler with the states AD_DESCRIPTION
     ad_creation_conversation_handler = ConversationHandler(
-        entry_points=[MessageHandler(Filters.regex('^(' + emojize(':heavy_plus_sign: Afegir', 
+        entry_points=[MessageHandler(Filters.regex('^(' + emojize(':heavy_plus_sign: Afegir Anunci', 
                       use_aliases=True) + ')$'), ad_creation_handler_state)],
 
         states={

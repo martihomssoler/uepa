@@ -78,7 +78,7 @@ class ShopDB():
     def get(self, shop_id: int):
         self.cursor.execute('select * from shops where id = ?', (shop_id,))
         shop_row = self.cursor.fetchone()
-        return Shop(shop_row[3], shop_row[6], shop_row[0], shop_row[5])
+        return Shop(shop_row[3], shop_row[4], shop_row[6], shop_row[0], shop_row[5])
 
     def remove(self, identifier: int):
         self.cursor.execute('''delete from shops where id=?''', (identifier,))

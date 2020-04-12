@@ -70,7 +70,7 @@ def mockup_category_response(update: Update, context: CallbackQuery):
             parse_mode=ParseMode.HTML)
     else:
         for s in shops:
-            if ('Alimentació' in s.categories):
+            if (s.categories != None and 'Alimentació' in s.categories):
                 send_shop(update, context, s)
 
 
@@ -99,13 +99,17 @@ def get_ads_handler(update: Update, context: CallbackQuery):
 # given an advertisement it will send the advertisement message with its own
 # inline keyboard buttons
 def send_ad(update, context, advertisement):
+    message = '<b>' + mockup_shops_db.get(advertisement.owner_id).name + '</b>'
+    update.message.reply_text(message, parse_mode=ParseMode.HTML)
+
     ad_buttons = []
     for [action, _] in ad_actions:
         cb_data = str([action, advertisement.id]).strip('[]')
         ad_buttons.append(InlineKeyboardButton(action, callback_data=cb_data))
 
     reply_markup = InlineKeyboardMarkup(build_menu(ad_buttons, n_cols=2))
-    message = '[id:' + str(advertisement.id) + '] ' + advertisement.message
+    # message = '[id:' + str(advertisement.id) + '] ' + advertisement.message
+    message = advertisement.message
     context.bot.send_message(update.message.chat_id,
                              text=message, reply_markup=reply_markup)
 

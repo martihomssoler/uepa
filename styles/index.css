@@ -559,6 +559,32 @@ span {
         transition: max-height .2s ease-out
     }
 
+    /* How */
+    .how {
+        padding: 0 2rem;
+    }
+
+    .section-shops__steps, .section-clients__steps {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .section-shops__step, .section-clients__step {
+        margin-bottom: 2rem;
+    }
+
+    .step__guide {
+        padding: 0 1rem 0 0;
+    }
+    
+    .step__guide-2 {
+        padding: 0 0 0 1rem;
+    }
+
+    .step__img {
+        height: 350px;
+    }
+
     /* Us */
     .us {
         padding: 2rem;

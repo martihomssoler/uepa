@@ -25,7 +25,7 @@ def add_dispatcher_handlers(dispatcher):
                        ')$'), message_received_handler))
 
     # Add conversation handler with the states LOCATION, NAME, DESCRIPTION, CATEGORY
-    conv_handler = ConversationHandler(
+    login_conversation_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start), MessageHandler(Filters.regex('^(' + 
                       emojize(':star2: Start', use_aliases=True) + ')$'), start)],
 
@@ -39,11 +39,30 @@ def add_dispatcher_handlers(dispatcher):
 
         fallbacks=[CommandHandler('cancel', cancel_handler_state)]
     )
-    dispatcher.add_handler(conv_handler)
+    dispatcher.add_handler(login_conversation_handler)
+
+    # Add conversation handler with the states LOCATION, NAME, DESCRIPTION, CATEGORY
+    ad_creation_conversation_handler = ConversationHandler(
+        entry_points=[MessageHandler(Filters.regex('^(' + emojize(':heavy_plus_sign: Afegir', 
+                      use_aliases=True) + ')$'), new_ad_handler)],
+
+        states={
+            LOCATION: [MessageHandler(Filters.location, set_location_handler_state)],
+            NAME: [MessageHandler(Filters.text, set_name_handler_state)],
+            DESCRIPTION: [MessageHandler(Filters.text, set_description_handler_state)],
+            CATEGORY: [MessageHandler(Filters.regex('^(' + get_categories(CATEGORY_LIST) + 
+                       '|Finalitzar)$'), set_category_handler_state)]
+        },
+
+        fallbacks=[CommandHandler('cancel', cancel_handler_state)]
+    )
+    dispatcher.add_handler(ad_creation_conversation_handler)
 
 def get_actions():
     actions = []
-    for [action, _] in shop_actions[:-1]:
+    modified_action = [emojize(':x: Borrar', use_aliases=True), 
+                       emojize(':question: Ajuda', use_aliases=True)]
+    for action in modified_action:
         actions.append(action)
     return '|'.join(actions)
 
@@ -81,8 +100,8 @@ def new_ad_handler(update: Update, context: CallbackQuery):
         "Si us plau, escriviu el contingut del nou anunci que voleu crear.")
 
 # get the content of the current message as the advertisement message to be created
-def add_new_ad(update):
-    mockup_advertisements_db.add(update.message.text)
+def add_new_ad(update: Update, context: CallbackQuery):
+    mockup_advertisements_db.add(update.message.from_user.id, update.message.text)
     # TODO check if an advertisement was indeed created
     update.message.reply_text("Nou anunci creat!")
 
@@ -93,7 +112,7 @@ def remove_ad_handler(update: Update, context: CallbackQuery):
         "Si us plau, escriviu l'identificador de l'anunci que voleu eliminar.")
 
 # get the content of the current message as the advertisement ID to be removed
-def remove_selected_ad(update):
+def remove_selected_ad(update: Update, context: CallbackQuery):
     mockup_advertisements_db.remove(update.message.text)
     # TODO check if an advertisement was indeed removed
     update.message.reply_text("Anunci eliminat!")
@@ -108,14 +127,14 @@ def message_received_handler(update: Update, context: CallbackQuery):
     # if the bot was waiting to receive the content of a new advertisement
     # then it will use the message content to create a new ad
     if (mockup_users_db.get_flag(update.message.from_user.id, UserFlags.FLAG_ADD)):
-        add_new_ad(update)
+        add_new_ad(update, context)
         # the user has sent a message and the flags have to be unset
         unset_all_flags(update.message.from_user.id)
 
     # if the bot was waiting to receive the advertisement id of the advertisement to be removed
     # then it will use the message content as the ID to remove the ad
     elif (mockup_users_db.get_flag(update.message.from_user.id, UserFlags.FLAG_REMOVE)):
-        remove_selected_ad(update)
+        remove_selected_ad(update, context)
         # the user has sent a message and the flags have to be unset
         unset_all_flags(update.message.from_user.id)
 
@@ -143,7 +162,7 @@ def placeholder_handler(update: Update, context: CallbackQuery):
 
 # endregion
 
-# region Conversation States
+# region Login Conversation States
 
 def set_location_handler_state(update: Update, context: CallbackQuery):
     user = update.message.from_user
@@ -213,6 +232,10 @@ def cancel_handler_state(update: Update, context: CallbackQuery):
     set_main_menu(update, context)
     # TODO erase the info in the DB
     return ConversationHandler.END
+
+# endregion
+
+# region Ad Creation Conversation States
 
 # endregion
 

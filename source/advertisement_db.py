@@ -19,8 +19,7 @@ class AdvertisementDB():
                             AND name='advertisements' ''')
         if (self.cursor.fetchone()[0] == 0):
             self.cursor.execute('''create table advertisements
-                        (id integer primary key, advertisement_message text,
-                         owner_id integer, date date)''')
+                        (id integer primary key, advertisement_message text, owner_id integer)''')
 
         self.connection.commit()
 
@@ -34,13 +33,18 @@ class AdvertisementDB():
             ads.append(new_ad)
         return ads
 
-    def add(self, message):
+    def get(self, identifier: int):
+        self.cursor.execute('''select * from advertisements where id=?''', (identifier,))
+        ad_row = self.cursor.fetchone()
+        return Advertisement(ad_row[1], ad_row[0], ad_row[2])
+
+    def add(self, owner_id: int, message: str):
         self.cursor.execute('''insert into advertisements
-                            (advertisement_message, owner_id, date) values
-                            (?, 1, '2020-04-10') ''', (message,))
+                            (advertisement_message, owner_id) values (?, ?) ''',
+                            (message, owner_id))
         self.connection.commit()
     
-    def remove(self, identifier):
+    def remove(self, identifier: int):
         self.cursor.execute('''delete from advertisements where id=?''', (identifier,))
         self.connection.commit()
 

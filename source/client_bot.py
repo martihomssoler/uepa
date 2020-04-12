@@ -53,7 +53,9 @@ def get_ads_handler(update: Update, context: CallbackQuery):
 def send_ad(update, context, advertisement):
     ad_buttons = []
     for [action, _] in ad_actions:
-        ad_buttons.append(InlineKeyboardButton(action, callback_data=action))
+        cb_data = str([action, advertisement.id]).strip('[]')
+        print(cb_data)
+        ad_buttons.append(InlineKeyboardButton(action, callback_data=cb_data))
 
     reply_markup = InlineKeyboardMarkup(build_menu(ad_buttons, n_cols=2))
     message = '[id:' + str(advertisement.id) + '] ' + advertisement.message
@@ -83,13 +85,17 @@ def help_handler(update: Update, context: CallbackQuery):
 # ADVERTISEMENT INLINE BUTTONS - handler executed whenever an inlined button from an advertisement 
 # is interacted with
 def button_pressed_handler(update: Update, context: CallbackQuery):
-    for [action, handler] in client_actions:
-        if (update.message.text == action):
-            handler(update, context)
-            return
     query: CallbackQuery = update.callback_query
     print('user interacted with ' + query.message.text + ' and pressed ' + query.data +
           ' button pressed by user ' + str(query.from_user.username))
+
+    # gets the action of the button {contactar, feedback}    
+    action_data = query.data.split(', ')[0].replace("'", "")
+    for [action, handler] in ad_actions:
+        if (action_data == action):
+            handler(update, context)
+            return
+    
 
 # PLACEHOLDER Command - unimplemented function
 def placeholder_handler(update: Update, context: CallbackQuery):
@@ -97,6 +103,12 @@ def placeholder_handler(update: Update, context: CallbackQuery):
     unimplemented_function(update)
 
 def contact_ad_owner(update: Update, context: CallbackQuery):
+    query: CallbackQuery = update.callback_query
+    advertisement_id = query.data.split(', ')[1]
+    print(mockup_advertisements_db.get(advertisement_id).owner_id)
+    from_chat_id = query.message.chat.id
+    message_id = query.message.message_id
+    context.bot.forward_message(from_chat_id, from_chat_id, message_id)
     return
 
 def give_ad_feedback(update: Update, context: CallbackQuery):

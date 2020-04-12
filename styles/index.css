@@ -3,7 +3,7 @@
 :root {
     --main-color: #33B05D;
     --lighter-main-color: #ADCF00;
-    --text-white: #FFFFFF;
+    --white: #FFFFFF;
     --text-black: #2c2c2c;
     --shadow: rgba(0, 0, 0, .3);
     --title-section: #4B8C5D;
@@ -21,6 +21,7 @@ body {
     margin: auto;
     font-family: 'Lato', sans-serif;
     font-size: 10px;
+    scroll-behavior: smooth;
 }
 
 div,
@@ -29,18 +30,12 @@ span {
     font-size: 1.6rem;
 }
 
-li {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 1.8rem;
-    text-transform: uppercase;
-}
-
 /** INTRO **/
 .intro {
     height: 90vh;
     width: 100%;
     background-image: linear-gradient(to bottom right, var(--main-color) 0%, var(--lighter-main-color) 100%);
-    color: var(--text-white);
+    color: var(--white);
     display: grid;
     grid-template-rows: 12vh 78vh;
     grid-template-columns: 100%;
@@ -74,6 +69,9 @@ li {
 .nav__element {
     transition: all .3s;
     margin-right: 2rem;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.8rem;
+    text-transform: uppercase;
 }
 
 .nav__element:active {
@@ -81,17 +79,17 @@ li {
 }
 
 .nav__link {
-    border: var(--text-white) 3px solid;
+    border: var(--white) 3px solid;
     padding: .5rem 1rem;
     border-radius: 10rem;
     transition: all .3s ease-in-out;
-    color: var(--text-white);
+    color: var(--white);
     text-decoration: none;
 }
 
 .nav__link:hover {
     /* box-shadow: 0px 0px 5px var(--shadow); */
-    background-color: var(--text-white);
+    background-color: var(--white);
     cursor: pointer;
     color: var(--main-color);
 }
@@ -130,7 +128,7 @@ li {
 
 .presentation__try-button {
     font-family: 'Montserrat', sans-serif;
-    color: var(--text-white);
+    color: var(--white);
     background-color: var(--main-color);
     border-radius: 10rem;
     padding: 1rem 2rem;
@@ -230,8 +228,12 @@ li {
 
 .how {
     display: none;
+    padding: 0 5rem;
 }
 
+.how__selector {
+
+}
 /** END HOW **/
 
 /** US **/
@@ -252,6 +254,9 @@ li {
     justify-content: center;
     flex-direction: column;
     align-items: center;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.8rem;
+    text-transform: uppercase;
 }
 
 .us__photo {
@@ -289,6 +294,15 @@ li {
 .footer {
     height: 20vh;
     background-color: var(--footer);
+    color: var(--white);
+    padding: 0 5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.footer__column {
+    text-align: center;
 }
 
 /** END FOOTER **/
@@ -300,7 +314,7 @@ li {
         height: 100vh;
         width: 100%;
         background-image: linear-gradient(to bottom right, var(--main-color) 0%, var(--lighter-main-color) 100%);
-        color: var(--text-white);
+        color: var(--white);
         display: grid;
         grid-template-rows: 22vh 78vh;
         grid-template-columns: 100%;

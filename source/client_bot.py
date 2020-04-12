@@ -7,11 +7,13 @@ ad_actions: List[List[Union[str, Callable]]] = None
 help_buttons: List[List[Union[str, Callable]]] = None
 client_actions: List[List[Union[str, Callable]]] = None
 cercar_actions: List[List[Union[str, Callable]]] = None
+
+login_actions: List[str] = None
 mockup_advertisements_db = None
 mockup_users_db = None
 mockup_shops_db = None
 
-LOCATION = range(1)
+LOGIN_OPTION, LOCATION = range(2)
 
 # region Helper Methods
 
@@ -20,14 +22,17 @@ LOCATION = range(1)
 def add_dispatcher_handlers(dispatcher):
     # this handler should be for the inline ad buttons
     dispatcher.add_handler(CallbackQueryHandler(button_pressed_handler))
+    dispatcher.add_handler(MessageHandler(Filters.regex('^(Alimentació)$'), mockup_category_response))
     dispatcher.add_handler(MessageHandler(Filters.regex('^(' + get_all_actions() + 
                            ')$'), message_received_handler))
 
-    # Add conversation handler with the states LOCATION, NAME, DESCRIPTION, CATEGORY
+    # Add conversation handler with the states LOGIN_OPTION, LOCATION
     login_conversation_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start_login_handler_state)],
 
         states={
+            LOGIN_OPTION: [MessageHandler(Filters.regex('^(' + get_login_options() + 
+                           ')$'), login_options_handler_state)],
             LOCATION: [MessageHandler(Filters.location, set_location_handler_state)]
         },
 
@@ -53,6 +58,21 @@ def get_all_actions():
     cercar_regex = '|'.join(x for [x, _] in cercar_actions)
     print(cercar_regex)
     return help_regex + '|' + client_regex + '|' + cercar_regex
+
+def get_login_options():
+    return '|'.join(login_actions)
+
+def mockup_category_response(update: Update, context: CallbackQuery):
+    shops = mockup_shops_db.get_all()
+    if (shops == []):
+        update.message.reply_text(emojize("No hem pogut trobar cap anunci :( " + 
+            "Apropa't al teu comerç més proper i anima’l a usar <b>Uepa!</b> :pear:"),
+            parse_mode=ParseMode.HTML)
+    else:
+        for s in shops:
+            if ('Alimentació' in s.categories):
+                send_shop(update, context, s)
+
 
 # endregion
 
@@ -88,6 +108,12 @@ def send_ad(update, context, advertisement):
     message = '[id:' + str(advertisement.id) + '] ' + advertisement.message
     context.bot.send_message(update.message.chat_id,
                              text=message, reply_markup=reply_markup)
+
+def send_shop(update, context, shop):
+    message = '<b>' + shop.name + '</b>\n' + shop.description
+    update.message.reply_text(message, parse_mode=ParseMode.HTML)
+    context.bot.send_contact(update.message.chat.id, shop.phone_number, shop.name)
+
 
 # SEARCH Command - asks for an input text and returns a list of shops who meet the
 # desired searching criteria
@@ -214,7 +240,21 @@ def give_ad_feedback(update: Update, context: CallbackQuery):
 
 def start_login_handler_state(update: Update, context: CallbackQuery):
     basic_callback_debug(update, context, command_name='start login')
-    update.message.reply_text("Si us plau, envia la localització on es troba.")
+    
+    kb_buttons = []
+    for action in login_actions:
+        kb_buttons.append(KeyboardButton(action)) 
+    kb_buttons = build_menu(kb_buttons, 1)
+    
+    kb_markup = ReplyKeyboardMarkup(kb_buttons)
+    context.bot.send_message(chat_id=update.message.chat_id, 
+                         text="Necessitem saber per on et trobes. Si us plau, esculliu una opció:",
+                         reply_markup=kb_markup)
+    return LOGIN_OPTION
+
+def login_options_handler_state(update: Update, context: CallbackQuery):
+    update.message.reply_text(emojize(''' Per compartir ubicació, clica a l' imatge del clip :paperclip: a la dreta de la barra de xat.
+Una vegada dins, seleccione Ubicació :pushpin: per compartir-la! ''', use_aliases=True))
     return LOCATION
 
 def set_location_handler_state(update: Update, context: CallbackQuery):
@@ -268,6 +308,10 @@ def main():
     cercar_actions = [[emojize(':rooster: Per Categoría', use_aliases=True), get_categories], 
                     [emojize(':abc: Per Nom', use_aliases=True), get_shop_search],
                     [emojize(':house: Start', use_aliases=True), start]]         
+
+    global login_actions
+    login_actions = [emojize(':house_with_garden: Per Barri', use_aliases=True), 
+                     emojize(':paperclip: Localització', use_aliases=True)]         
 
     global shop_categories
     shop_categories = [["Serveis generals", "1"], 

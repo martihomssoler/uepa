@@ -27,8 +27,7 @@ def add_dispatcher_handlers(dispatcher):
 
     # Add conversation handler with the states LOCATION, CONTACT, NAME, DESCRIPTION, CATEGORY
     login_conversation_handler = ConversationHandler(
-        entry_points=[CommandHandler('start', start), MessageHandler(Filters.regex('^(' + 
-                      emojize(':star2: Start', use_aliases=True) + ')$'), start)],
+        entry_points=[CommandHandler('start', start)],
 
         states={
             LOCATION: [MessageHandler(Filters.location, set_location_handler_state)],
@@ -84,12 +83,7 @@ def set_main_menu(update: Update, context: CallbackQuery):
 # START Command - executed when the conversation starts
 def start(update: Update, context: CallbackQuery):
     basic_callback_debug(update, context, command_name='start')
-    mockup_users_db.add(update.message.from_user.id)
-
-    #set_main_menu(update, context)
-
-    update.message.reply_text("Si us plau, envia la localització on es troba la seva botiga.")
-    return LOCATION
+    return start_handler_state(update, context)
 
 # REMOVE Command - asks for the desired advertisement id to be removed
 def remove_ad_handler(update: Update, context: CallbackQuery):
@@ -150,13 +144,26 @@ def placeholder_handler(update: Update, context: CallbackQuery):
 
 # region Login Conversation States
 
+def start_handler_state(update: Update, context: CallbackQuery):
+    basic_callback_debug(update, context, command_name='start')
+    mockup_users_db.add(update.message.from_user.id)
+    kb_markup = ReplyKeyboardRemove()
+    context.bot.send_message(chat_id=update.message.chat_id, 
+                             text=emojize('''Si us plau, envia la localització on es troba la seva botiga.\n
+Per compartir ubicació, clica a l' imatge del clip :paperclip: a la dreta de la barra de xat.\n
+Una vegada dins, seleccione Ubicació :pushpin: per compartir-la! ''', use_aliases=True),
+                             reply_markup=kb_markup)
+    return LOCATION
+
 def set_location_handler_state(update: Update, context: CallbackQuery):
     user = update.message.from_user
     user_location = update.message.location
     logging.info("Location of %s: %f / %f", user.first_name, user_location.latitude,
                  user_location.longitude)
     mockup_shops_db.add(user.id, user_location.longitude, user_location.latitude)
-    update.message.reply_text("Si us plau, envïi'ns els seu contacte.")
+    update.message.reply_text(emojize('''Si us plau, envïi'ns els seu contacte.\n
+Per compartir el contacte, fes clic als tres punts (...) de la part superior dreta de la pantalla.\n
+A continuació, clica en "Compartir contacte" :iphone: ''', use_aliases=True))
     return CONTACT
 
 def set_contact_handler_state(update: Update, context: CallbackQuery):
@@ -261,10 +268,10 @@ def main():
     mockup_shops_db = ShopDB("../data/shop_test.db")
 
     global shop_actions
-    shop_actions = [[emojize(':heavy_plus_sign: Afegir', use_aliases=True), ad_creation_handler_state], 
-                    [emojize(':x: Borrar', use_aliases=True), remove_ad_handler], 
-                    [emojize(':question: Ajuda', use_aliases=True), help_handler],
-                    [emojize(':star2: Start', use_aliases=True), start]]
+    shop_actions = [[emojize(':heavy_plus_sign: Afegir Anunci', use_aliases=True), ad_creation_handler_state], 
+                    [emojize(':x: Borrar Anunci', use_aliases=True), remove_ad_handler], 
+                    [emojize(':bulb: Ajuda', use_aliases=True), help_handler],
+                    [emojize(':newspaper: Què es cou', use_aliases=True), start]]
     
     # connect to the API with the key inside the secret.txt file
     updater = Updater(str(API_KEY),

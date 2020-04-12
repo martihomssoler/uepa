@@ -3,8 +3,9 @@
 import sqlite3
 
 class Shop():
-    def __init__(self, name, phone_number, owner_id, categories):
+    def __init__(self, name, description, phone_number, owner_id, categories):
         self.name = name
+        self.description = description
         self.phone_number = phone_number
         self.owner_id = owner_id
         self.categories = categories
@@ -64,6 +65,16 @@ class ShopDB():
                             (categories, shop_id))
         self.connection.commit()
     
+    def get_all(self):
+            self.cursor.execute('''select * from shops''')
+            shop_row = self.cursor.fetchall()
+            shops = []
+            for row in shop_row:
+                print(row)
+                new_shop = Shop(row[3], row[4], row[6], row[0], row[5])
+                shops.append(new_shop)
+            return shops
+
     def get(self, shop_id: int):
         self.cursor.execute('select * from shops where id = ?', (shop_id,))
         shop_row = self.cursor.fetchone()

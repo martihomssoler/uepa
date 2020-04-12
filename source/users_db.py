@@ -27,8 +27,8 @@ class UsersDB():
 
     def add(self, identifier: int):
         self.cursor.execute('insert into users (id, ' + UserFlags.FLAG_ADD.name + ', ' +
-                             UserFlags.FLAG_REMOVE.name + ') values (?, False, False)', 
-                             (identifier,))
+                             UserFlags.FLAG_REMOVE.name + ') values (?, ?, ?)', 
+                             (identifier, False, False))
         self.connection.commit()
     
     def remove(self, identifier: int):

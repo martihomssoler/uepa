@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from bot_utils import *
 
 API_KEY = open('../data/client_secret.txt', 'r').read().strip()

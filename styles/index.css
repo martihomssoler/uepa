@@ -262,13 +262,17 @@ li {
     background-size: cover;
 }
 
-.albert {}
+.albert {
+    background-image: url(../public/img/albert.jpeg);
+}
 
 .xavi {
     background-image: url(../public/img/xavi.jpeg);
 }
 
-.marti {}
+.marti {
+    background-image: url(../public/img/marti.jpeg);
+}
 
 .marc {
     background-image: url(../public/img/marc.png);

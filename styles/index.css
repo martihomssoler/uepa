@@ -4,6 +4,7 @@
     --main-color: #33B05D;
     --lighter-main-color: #ADCF00;
     --text-white: #FFFFFF;
+    --text-black: #2c2c2c;
     --shadow: rgba(0, 0, 0, .3);
     --title-section: #4B8C5D;
     --footer: #0F1C13;
@@ -210,6 +211,8 @@ li {
 .point__title {
     text-align: center;
     padding-bottom: .5rem;
+    color: var(--text-black);
+    font-family: 'Montserrat', sans-serif;
 }
 
 .point__text {
@@ -222,6 +225,14 @@ li {
 }
 
 /** END KEY POINTS **/
+
+/** HOW **/
+
+.how {
+    display: none;
+}
+
+/** END HOW **/
 
 /** US **/
 .us {
@@ -357,8 +368,32 @@ li {
         flex-direction: column;
     }
 
+    .key-points__point {
+        padding: 2rem 0;
+    }
+
+    .point__title {
+        text-align: left;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .point__title::after {
+        content: '\002B';
+        font-weight: bold;
+        font-size: 2rem;
+    }
+
+    .active::after {
+        content: "\2212";
+    }
+
     .point__text {
         text-align: justify;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height .2s ease-out
     }
 
     /* Us */

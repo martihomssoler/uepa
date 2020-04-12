@@ -212,7 +212,9 @@ li {
     padding-bottom: .5rem;
 }
 
-.point__text {}
+.point__text {
+    text-align: justify;
+}
 
 .uepa {
     font-weight: 600;
@@ -221,19 +223,19 @@ li {
 
 /** END KEY POINTS **/
 
-/** WE **/
-.we {
+/** US **/
+.us {
     padding: 0 5rem 5rem 5rem;
 }
 
-.we__list {
+.us__list {
     list-style-type: none;
     display: flex;
     justify-content: space-between;
     margin-top: 5rem;
 }
 
-.we__element {
+.us__element {
     width: 20%;
     display: flex;
     justify-content: center;
@@ -241,7 +243,7 @@ li {
     align-items: center;
 }
 
-.we__photo {
+.us__photo {
     height: 15vw;
     width: 15vw;
     background-color: var(--main-color);
@@ -261,7 +263,7 @@ li {
     background-image: url(../public/img/marc.png);
 }
 
-.we__name {
+.us__name {
     margin-top: 2rem;
     text-align: center;
 }
@@ -278,7 +280,7 @@ li {
 
 /*** MOBILE **/
 
-@media (max-width: 750px) {
+@media (max-width: 1200px) {
     .intro {
         height: 100vh;
         width: 100%;
@@ -359,31 +361,31 @@ li {
         text-align: justify;
     }
 
-    /* We */
-    .we {
+    /* Us */
+    .us {
         padding: 2rem;
     }
 
-    .we__section-title {
+    .us__section-title {
         padding: 0;
     }
 
-    .we__list {
+    .us__list {
         margin-top: 2rem;
         flex-wrap: wrap;
     }
 
-    .we__element {
+    .us__element {
         width: 50%;
         margin-bottom: 2rem;
     }
 
-    .we__photo {
+    .us__photo {
         height: 35vw;
         width: 35vw;
     }
 
-    .we__name {
+    .us__name {
         margin-top: 1rem;
     }
 }

@@ -58,8 +58,9 @@ def add_dispatcher_handlers(dispatcher):
 
 def get_actions():
     actions = []
-    modified_action = [emojize(':x: Borrar', use_aliases=True), 
-                       emojize(':question: Ajuda', use_aliases=True)]
+    modified_action = [emojize(':x: Borrar Anunci', use_aliases=True), 
+                       emojize(':bulb: Ajuda', use_aliases=True),
+                       emojize(':newspaper: Què es cou', use_aliases=True)]
     for action in modified_action:
         actions.append(action)
     return '|'.join(actions)
@@ -86,11 +87,18 @@ def start(update: Update, context: CallbackQuery):
     basic_callback_debug(update, context, command_name='start')
     return start_handler_state(update, context)
 
+def restart(update: Update, context: CallbackQuery):
+    basic_callback_debug(update, context, command_name='restart')
+    update.message.reply_text(emojize("Aquesta funcionalitat encara no està implementada, pròximament afegirem la possibilitat de que els comerços també puguin consultar els anuncis de les botigues properes, com a forma de crear xarxa comercial :house_with_garden:", use_aliases=True))
+    # set_main_menu(update, context)
+
 # REMOVE Command - asks for the desired advertisement id to be removed
 def remove_ad_handler(update: Update, context: CallbackQuery):
-    mockup_users_db.set_flag(update.message.from_user.id, UserFlags.FLAG_REMOVE)
-    update.message.reply_text(
-        "Si us plau, escriviu l'identificador de l'anunci que voleu eliminar.")
+    basic_callback_debug(update, context, command_name='remove ad')
+    update.message.reply_text(emojize("Aquesta funcionalitat encara no està implementada, pròximament afegirem la possibilitat d’esborrar :x: i editar :pencil2: anuncis passats.", use_aliases=True))
+    #  mockup_users_db.set_flag(update.message.from_user.id, UserFlags.FLAG_REMOVE)
+    # update.message.reply_text(
+    #     "Si us plau, escriviu l'identificador de l'anunci que voleu eliminar.")
 
 # get the content of the current message as the advertisement ID to be removed
 def remove_selected_ad(update: Update, context: CallbackQuery):
@@ -126,8 +134,9 @@ def unset_all_flags(user_id: int):
 # HELP Command - returns a pretty-printed list of commands and useful information
 # [currently unimplemented]
 def help_handler(update: Update, context: CallbackQuery):
-    basic_callback_debug(update, context, command_name='help')
-    placeholder_handler(update, context)
+    update.message.reply_text(emojize("Aquesta funcionalitat encara no està implementada, pròximament afegirem les indicacions d'ajuda on podreu consultar les diverses funcionalitats que aporta uepa comerç :bulb:", use_aliases=True))
+    # basic_callback_debug(update, context, command_name='help')
+    # placeholder_handler(update, context)
 
 # ADVERTISEMENT INLINE BUTTONS - handler executed whenever an inlined button from an advertisement 
 # is interacted with
@@ -197,8 +206,9 @@ def set_description_handler_state(update: Update, context: CallbackQuery):
     kb_buttons = build_menu(kb_buttons, 2)
     kb_markup = ReplyKeyboardMarkup(kb_buttons)
     
+    category_list = mockup_shops_db.get(user.id).categories
     context.bot.send_message(chat_id=update.message.chat_id, 
-                             text="Selecciona les categories que mes escauen al teu negoci.",
+                             text="Selecciona les categories que mes escauen al teu negoci.\n Categories: ",
                              reply_markup=kb_markup)
     return CATEGORY
 
@@ -273,7 +283,7 @@ def main():
     shop_actions = [[emojize(':heavy_plus_sign: Afegir Anunci', use_aliases=True), ad_creation_handler_state], 
                     [emojize(':x: Borrar Anunci', use_aliases=True), remove_ad_handler], 
                     [emojize(':bulb: Ajuda', use_aliases=True), help_handler],
-                    [emojize(':newspaper: Què es cou', use_aliases=True), start]]
+                    [emojize(':newspaper: Què es cou', use_aliases=True), restart]]
     
     # connect to the API with the key inside the secret.txt file
     updater = Updater(str(API_KEY),

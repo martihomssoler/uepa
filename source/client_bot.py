@@ -23,7 +23,8 @@ LOGIN_OPTION, LOCATION = range(2)
 def add_dispatcher_handlers(dispatcher):
     # this handler should be for the inline ad buttons
     dispatcher.add_handler(CallbackQueryHandler(button_pressed_handler))
-    dispatcher.add_handler(MessageHandler(Filters.regex('^(Alimentació)$'), mockup_category_response))
+    dispatcher.add_handler(MessageHandler(Filters.regex('^(' + get_all_categories() + ')$'), 
+                           mockup_category_response))
     dispatcher.add_handler(MessageHandler(Filters.regex('^(' + get_all_actions() + 
                            ')$'), message_received_handler))
 
@@ -53,11 +54,8 @@ def set_main_menu(update: Update, context: CallbackQuery):
 
 def get_all_actions():
     help_regex = '|'.join(x for [x, _] in help_buttons)
-    print(help_regex)
     client_regex = '|'.join(x for [x, _] in client_actions)
-    print(client_regex)
     cercar_regex = '|'.join(x for [x, _] in cercar_actions)
-    print(cercar_regex)
     return help_regex + '|' + client_regex + '|' + cercar_regex
 
 def get_login_options():
@@ -65,14 +63,21 @@ def get_login_options():
 
 def mockup_category_response(update: Update, context: CallbackQuery):
     shops = mockup_shops_db.get_all()
-    if (shops == []):
-        update.message.reply_text(emojize("No hem pogut trobar cap anunci :( " + 
+    shop_found = False
+    for s in shops:
+        if (s.categories != None and update.message.text in s.categories):
+            send_shop(update, context, s)
+            shop_found = True
+    
+    if (shop_found):
+        return
+
+    update.message.reply_text(emojize("No hem pogut trobar cap comerç que compleixi les condicions de cerca.\n " + 
             "Apropa't al teu comerç més proper i anima’l a usar <b>Uepa!</b> :pear:"),
             parse_mode=ParseMode.HTML)
-    else:
-        for s in shops:
-            if (s.categories != None and 'Alimentació' in s.categories):
-                send_shop(update, context, s)
+
+def get_all_categories():
+    return '|'.join(shop_categories[:-1])
 
 
 # endregion
@@ -83,6 +88,10 @@ def mockup_category_response(update: Update, context: CallbackQuery):
 def start(update: Update, context: CallbackQuery):
     basic_callback_debug(update, context, command_name='start')
     set_main_menu(update, context)
+
+def restart(update: Update, context: CallbackQuery):
+    basic_callback_debug(update, context, command_name='restart')
+    update.message.reply_text(emojize("Per trobar les botigues de proximitat del teu barri que continuen obertes durant el confinament pel Covid-19, pots adreçar-te al mapa proporcionat per Barcelona Comerç! :house_with_garden:\n https://botiguesobertes.barcelona/ ", use_aliases=True))
 
 # ADS Command - return a list of ads of interest to the user
 def get_ads_handler(update: Update, context: CallbackQuery):
@@ -143,7 +152,7 @@ def get_categories(update: Update, context: CallbackQuery):
 
     kb_buttons = []
     # Generate search buttons!
-    for [action, _] in shop_categories:
+    for action in shop_categories:
     	kb_buttons.append(KeyboardButton(action)) 
     kb_buttons = build_menu(kb_buttons, 2)
     kb_markup = ReplyKeyboardMarkup(kb_buttons)
@@ -152,8 +161,7 @@ def get_categories(update: Update, context: CallbackQuery):
 
 def get_shop_search(update: Update, context: CallbackQuery):
     basic_callback_debug(update, context, command_name='shop_name_search')
-    update.message.reply_text(emojize("Escriu el nom del comerç " +
-    	"O envian's un àudio! Aquest serà processat utilitzant <b>NLP</b> :microphone:"), parse_mode=ParseMode.HTML)
+    update.message.reply_text(emojize("Aquesta funcionalitat no està implementada. Pròximament afegirem la possibilitat de rebre notes de veu :microphone:"), parse_mode=ParseMode.HTML)
 
 
 # HELP Command - returns a pretty-printed list of commands and useful information
@@ -178,9 +186,6 @@ def get_uepa_help(update: Update, context: CallbackQuery):
     	"\nFinalment, si vols fer una cerca amb el llistat de tots els establiments registrats al teu barri, " +
     	"pots accedir a <b>Llista</b> :memo:. \nMoltes gràcies per fer servir Uepa i esperem que gaudeixis aquesta plataforma!" +
     	"Comunica als teus comerciants de proximitat i fem barri junts! "), parse_mode=ParseMode.HTML)
-
-    
-
 
 
 def get_contact_help(update: Update, context: CallbackQuery):
@@ -237,6 +242,9 @@ def contact_ad_owner(update: Update, context: CallbackQuery):
     return
 
 def give_ad_feedback(update: Update, context: CallbackQuery):
+    query: CallbackQuery = update.callback_query
+    context.bot.send_message(chat_id=query.message.chat.id,
+                             text=(emojize("Aquest botó encara no té funcionalitat. Inclourem un sistema de feedback per donar Like :thumbsup: , Dislike :thumbsdown: o Reportar :x:. Utilitzant sistemes de decisió que en cas d’escalar inclourien AI, generarem una Dashboard personalitzada i autogestionada pel barri :house_with_garden:", use_aliases=True)))
     return
 
 # endregion
@@ -258,9 +266,13 @@ def start_login_handler_state(update: Update, context: CallbackQuery):
     return LOGIN_OPTION
 
 def login_options_handler_state(update: Update, context: CallbackQuery):
-    update.message.reply_text(emojize(''' Per compartir ubicació, clica a l' imatge del clip :paperclip: a la dreta de la barra de xat.
+    if (update.message.text == emojize(':house_with_garden: Per Barri', use_aliases=True)):
+        update.message.reply_text(emojize('Aquesta funcionalitat encara no està implementada. Pròximament inclourem un llistat dividit per districtes i barris per identificar-te depenent del teu veïnat! :house_with_garden:. Si us plau, selecciona Localització ', use_aliases=True))
+        return LOGIN_OPTION
+    else:
+        update.message.reply_text(emojize(''' Per compartir ubicació, clica a l' imatge del clip :paperclip: a la dreta de la barra de xat.
 Una vegada dins, seleccione Ubicació :pushpin: per compartir-la! ''', use_aliases=True))
-    return LOCATION
+        return LOCATION
 
 def set_location_handler_state(update: Update, context: CallbackQuery):
     user = update.message.from_user
@@ -307,7 +319,7 @@ def main():
     client_actions = [[emojize(':newspaper: Què es cou', use_aliases=True), get_ads_handler], 
                     [emojize(':mag: Cercar', use_aliases=True), search_handler], 
                     [emojize(':bulb: Ajuda', use_aliases=True), help_handler],
-                    [emojize(':house_with_garden: El meu barri', use_aliases=True), start]]
+                    [emojize(':house_with_garden: El meu barri', use_aliases=True), restart]]
 
     global cercar_actions
     cercar_actions = [[emojize(':rooster: Per Categoría', use_aliases=True), get_categories], 
@@ -319,15 +331,15 @@ def main():
                      emojize(':paperclip: Localització', use_aliases=True)]         
 
     global shop_categories
-    shop_categories = [["Serveis generals", "1"], 
-                    ["Alimentació", "2"],
-                    ["Hosteleria", "3"],
-                    ["Roba i Complements", "4"],
-                    ["Llar", "5"],
-                    ["Salut i benestar", "6"],
-                    ["Altres", "7"],
-                    ["Oci i Cultura", "8"],
-                    [emojize(":house: Start"), start]]
+    shop_categories = ["Serveis generals", 
+                       "Alimentació",
+                       "Hosteleria",
+                       "Roba i Complements",
+                       "Llar",
+                       "Salut i benestar",
+                       "Altres",
+                       "Oci i Cultura",
+                       emojize(":house: Start")]
 
     global ad_actions
     ad_actions = [[emojize('contactar'), contact_ad_owner],

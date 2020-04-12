@@ -22,13 +22,13 @@ class ShopDB():
         self.cursor.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table'
                             AND name='shops' ''')
         if (self.cursor.fetchone()[0] == 0):
-            self.cursor.execute('create table shops (id integer, longitude real, ' + 
+            self.cursor.execute('create table shops (id integer primary key, longitude real, ' + 
                                 'latitude real, name text, description text, ' + 
                                 'categories text, phone_number text)')
         self.connection.commit()
 
     def add(self, shop_id: int, longitude: float, latitude: float):
-        self.cursor.execute('''insert into shops (id, longitude, latitude) 
+        self.cursor.execute('''insert or replace into shops (id, longitude, latitude) 
                                values (?, ?, ?)''', 
                              (shop_id, longitude, latitude))
         self.connection.commit()
@@ -53,7 +53,7 @@ class ShopDB():
                             (shop_id,))
         
         cat_list = self.cursor.fetchone()[0]
-        if (cat_list != None):
+        if (cat_list != None and len(cat_list) > 0):
             cat_list = cat_list + ', ' + category
         else:
             cat_list = category

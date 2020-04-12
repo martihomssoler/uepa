@@ -20,13 +20,13 @@ class UsersDB():
         self.cursor.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table'
                             AND name='users' ''')
         if (self.cursor.fetchone()[0] == 0):
-            self.cursor.execute('create table users (id integer, ' + UserFlags.FLAG_ADD.name + 
+            self.cursor.execute('create table users (id integer primary key, ' + UserFlags.FLAG_ADD.name + 
                                 ' boolean, ' + UserFlags.FLAG_REMOVE.name + ' boolean, longitude real, ' + 
                                 'latitude real )')
         self.connection.commit()
 
     def add(self, identifier: int):
-        self.cursor.execute('insert into users (id, ' + UserFlags.FLAG_ADD.name + ', ' +
+        self.cursor.execute('insert or replace into users (id, ' + UserFlags.FLAG_ADD.name + ', ' +
                              UserFlags.FLAG_REMOVE.name + ') values (?, ?, ?)', 
                              (identifier, False, False))
         self.connection.commit()
@@ -36,7 +36,7 @@ class UsersDB():
         self.connection.commit()
 
     def set_location(self, identifier: int, longitude: float, latitude: float):
-        self.cursor.execute('insert into users (id, longitude, latitude) values (?, ?, ?)', 
+        self.cursor.execute('insert or replace into users (id, longitude, latitude) values (?, ?, ?)', 
                             (identifier, longitude, latitude))
         self.connection.commit()
 

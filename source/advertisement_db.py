@@ -39,7 +39,7 @@ class AdvertisementDB():
         return Advertisement(ad_row[1], ad_row[0], ad_row[2])
 
     def add(self, owner_id: int, message: str):
-        self.cursor.execute('''insert into advertisements
+        self.cursor.execute('''insert or replace into advertisements
                             (advertisement_message, owner_id) values (?, ?) ''',
                             (message, owner_id))
         self.connection.commit()

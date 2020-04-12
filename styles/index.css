@@ -15,13 +15,16 @@
     box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
     margin: auto;
     font-family: 'Lato', sans-serif;
     font-size: 10px;
 }
 
-div, p, span {
+div,
+p,
+span {
     font-size: 1.6rem;
 }
 
@@ -166,6 +169,7 @@ li {
     background-image: url(../public/img/introbg.jpg);
     background-size: cover;
 }
+
 /** END INTRO **/
 
 /** KEY POINTS **/
@@ -208,13 +212,13 @@ li {
     padding-bottom: .5rem;
 }
 
-.point__text {
-}
+.point__text {}
 
 .uepa {
     font-weight: 600;
     color: var(--title-section);
 }
+
 /** END KEY POINTS **/
 
 /** WE **/
@@ -245,17 +249,13 @@ li {
     background-size: cover;
 }
 
-.albert {
-
-}
+.albert {}
 
 .xavi {
     background-image: url(../public/img/xavi.jpeg);
 }
 
-.marti {
-
-}
+.marti {}
 
 .marc {
     background-image: url(../public/img/marc.png);
@@ -265,6 +265,7 @@ li {
     margin-top: 2rem;
     text-align: center;
 }
+
 /** END WE **/
 
 /** FOOTER **/
@@ -272,6 +273,7 @@ li {
     height: 20vh;
     background-color: var(--footer);
 }
+
 /** END FOOTER **/
 
 /*** MOBILE **/
@@ -291,7 +293,7 @@ li {
     .intro__header {
         padding: 0 2rem;
     }
-    
+
     .header__nav {
         width: unset;
         height: 100%;
@@ -345,17 +347,43 @@ li {
     }
 
     /* Key points */
+    .key-points {
+        padding: 0 2rem;
+    }
 
     .key-points__wrapper {
         flex-direction: column;
     }
 
     .point__text {
-        text-align: center;
+        text-align: justify;
+    }
+
+    /* We */
+    .we {
+        padding: 2rem;
+    }
+
+    .we__section-title {
+        padding: 0;
+    }
+
+    .we__list {
+        margin-top: 2rem;
+        flex-wrap: wrap;
     }
 
     .we__element {
         width: 50%;
+        margin-bottom: 2rem;
+    }
+
+    .we__photo {
+        height: 35vw;
+        width: 35vw;
+    }
+
+    .we__name {
+        margin-top: 1rem;
     }
 }
-

@@ -6,7 +6,7 @@ import re
 import logging
 from advertisement_db import Advertisement, AdvertisementDB
 from users_db import UserFlags, UsersDB
-from shop_db import ShopDB
+from shop_db import Shop, ShopDB
 from emoji import emojize
 
 # Simple function that helps me get a debug message on the bots console

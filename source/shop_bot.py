@@ -7,9 +7,9 @@ API_KEY = open('../data/shop_secret.txt', 'r').read().strip()
 shop_actions: List[List[Union[str, Callable]]] = None
 mockup_advertisements_db = None
 mockup_users_db = None
-mockup_shop_db = None
+mockup_shops_db = None
 
-LOCATION, NAME, DESCRIPTION, CATEGORY = range(4)
+LOCATION, CONTACT, NAME, DESCRIPTION, CATEGORY = range(5)
 AD_DESCRIPTION = range(1)
 
 CATEGORY_LIST = ['Serveis generals', 'Alimentació', 'Hosteleria', 'Roba i Complements', 
@@ -25,13 +25,14 @@ def add_dispatcher_handlers(dispatcher):
     dispatcher.add_handler(MessageHandler(Filters.regex('^(' + get_actions() + 
                        ')$'), message_received_handler))
 
-    # Add conversation handler with the states LOCATION, NAME, DESCRIPTION, CATEGORY
+    # Add conversation handler with the states LOCATION, CONTACT, NAME, DESCRIPTION, CATEGORY
     login_conversation_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start), MessageHandler(Filters.regex('^(' + 
                       emojize(':star2: Start', use_aliases=True) + ')$'), start)],
 
         states={
             LOCATION: [MessageHandler(Filters.location, set_location_handler_state)],
+            CONTACT: [MessageHandler(Filters.contact, set_contact_handler_state)],
             NAME: [MessageHandler(Filters.text, set_name_handler_state)],
             DESCRIPTION: [MessageHandler(Filters.text, set_description_handler_state)],
             CATEGORY: [MessageHandler(Filters.regex('^(' + get_categories(CATEGORY_LIST) + 
@@ -154,7 +155,15 @@ def set_location_handler_state(update: Update, context: CallbackQuery):
     user_location = update.message.location
     logging.info("Location of %s: %f / %f", user.first_name, user_location.latitude,
                  user_location.longitude)
-    mockup_shop_db.add(user.id, user_location.longitude, user_location.latitude)
+    mockup_shops_db.add(user.id, user_location.longitude, user_location.latitude)
+    update.message.reply_text("Si us plau, envïi'ns els seu contacte.")
+    return CONTACT
+
+def set_contact_handler_state(update: Update, context: CallbackQuery):
+    user = update.message.from_user
+    phone_number = update.message.contact.phone_number
+    logging.info("Phone number of %s: %s", user.first_name, phone_number)
+    mockup_shops_db.set_phone_number(user.id, phone_number)
     update.message.reply_text("Diga'ns quin nom te la seva botiga.")
     return NAME
 
@@ -162,7 +171,7 @@ def set_name_handler_state(update: Update, context: CallbackQuery):
     user = update.message.from_user
     shop_name = update.message.text
     logging.info("The name of %s's shop is %s.", user.first_name, shop_name)
-    mockup_shop_db.set_name(user.id, shop_name)
+    mockup_shops_db.set_name(user.id, shop_name)
     update.message.reply_text("Descriu la seva botiga.")
     return DESCRIPTION
 
@@ -170,7 +179,7 @@ def set_description_handler_state(update: Update, context: CallbackQuery):
     user = update.message.from_user
     description = update.message.text
     logging.info("The description of %s's shop is: %s.", user.first_name, description)
-    mockup_shop_db.set_description(user.id, description)
+    mockup_shops_db.set_description(user.id, description)
 
     kb_buttons = []
     for cat in CATEGORY_LIST:
@@ -196,7 +205,7 @@ def set_category_handler_state(update: Update, context: CallbackQuery):
         set_main_menu(update, context)
         return ConversationHandler.END
     
-    category_list = mockup_shop_db.get(user.id)[5]
+    category_list = mockup_shops_db.get(user.id).categories
     if (category_list != None and category in category_list):
         if (category + ', ' in category_list):
             category_list = category_list.replace(category + ', ', '')
@@ -204,11 +213,11 @@ def set_category_handler_state(update: Update, context: CallbackQuery):
             category_list = category_list.replace(', ' + category, '')
         else:
             category_list = category_list.replace(category, '')
-        mockup_shop_db.set_categories(user.id, category_list)
+        mockup_shops_db.set_categories(user.id, category_list)
     else:
-        mockup_shop_db.add_category(user.id, category)
+        mockup_shops_db.add_category(user.id, category)
     
-    update.message.reply_text("Categories: " + mockup_shop_db.get(user.id)[5])
+    update.message.reply_text("Categories: " + mockup_shops_db.get(user.id).categories)
     return CATEGORY
 
 def cancel_handler_state(update: Update, context: CallbackQuery):
@@ -246,10 +255,10 @@ def main():
     # in case the file does not exists it will create an empty table
     global mockup_advertisements_db
     global mockup_users_db
-    global mockup_shop_db
+    global mockup_shops_db
     mockup_advertisements_db = AdvertisementDB('../data/advertisement_test.db')
     mockup_users_db = UsersDB("../data/users_test.db")
-    mockup_shop_db = ShopDB("../data/shop_test.db")
+    mockup_shops_db = ShopDB("../data/shop_test.db")
 
     global shop_actions
     shop_actions = [[emojize(':heavy_plus_sign: Afegir', use_aliases=True), ad_creation_handler_state], 

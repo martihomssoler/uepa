@@ -4,8 +4,12 @@ API_KEY = open('../data/client_secret.txt', 'r').read().strip()
 
 client_actions: List[List[Union[str, Callable]]] = None
 ad_actions: List[List[Union[str, Callable]]] = None
+help_buttons: List[List[Union[str, Callable]]] = None
+client_actions: List[List[Union[str, Callable]]] = None
+cercar_actions: List[List[Union[str, Callable]]] = None
 mockup_advertisements_db = None
 mockup_users_db = None
+mockup_shops_db = None
 
 LOCATION = range(1)
 
@@ -16,7 +20,8 @@ LOCATION = range(1)
 def add_dispatcher_handlers(dispatcher):
     # this handler should be for the inline ad buttons
     dispatcher.add_handler(CallbackQueryHandler(button_pressed_handler))
-    dispatcher.add_handler(MessageHandler(Filters.text, message_received_handler))
+    dispatcher.add_handler(MessageHandler(Filters.regex('^(' + get_all_actions() + 
+                           ')$'), message_received_handler))
 
     # Add conversation handler with the states LOCATION, NAME, DESCRIPTION, CATEGORY
     login_conversation_handler = ConversationHandler(
@@ -35,10 +40,19 @@ def set_main_menu(update: Update, context: CallbackQuery):
     for [action, _] in client_actions:
         kb_buttons.append(KeyboardButton(action)) 
     kb_buttons = build_menu(kb_buttons, 2)
-
+    
     kb_markup = ReplyKeyboardMarkup(kb_buttons)
     context.bot.send_message(chat_id=update.message.chat_id, text='Selecciona una opció:',
                              reply_markup=kb_markup)
+
+def get_all_actions():
+    help_regex = '|'.join(x for [x, _] in help_buttons)
+    print(help_regex)
+    client_regex = '|'.join(x for [x, _] in client_actions)
+    print(client_regex)
+    cercar_regex = '|'.join(x for [x, _] in cercar_actions)
+    print(cercar_regex)
+    return help_regex + '|' + client_regex + '|' + cercar_regex
 
 # endregion
 
@@ -185,10 +199,10 @@ def placeholder_handler(update: Update, context: CallbackQuery):
 def contact_ad_owner(update: Update, context: CallbackQuery):
     query: CallbackQuery = update.callback_query
     advertisement_id = query.data.split(', ')[1]
-    print(mockup_advertisements_db.get(advertisement_id).owner_id)
+    ad_interacted = mockup_advertisements_db.get(advertisement_id)
+    shop_owner = mockup_shops_db.get(ad_interacted.owner_id)
     from_chat_id = query.message.chat.id
-    message_id = query.message.message_id
-    context.bot.forward_message(from_chat_id, from_chat_id, message_id)
+    context.bot.send_contact(from_chat_id, shop_owner.phone_number, shop_owner.name)
     return
 
 def give_ad_feedback(update: Update, context: CallbackQuery):
@@ -197,9 +211,10 @@ def give_ad_feedback(update: Update, context: CallbackQuery):
 # endregion
 
 # region Login Conversation States
+
 def start_login_handler_state(update: Update, context: CallbackQuery):
-    basic_callback_debug(update, context, command_name='start')
-    update.message.reply_text("Diga'ns quin nom te la seva botiga.")
+    basic_callback_debug(update, context, command_name='start login')
+    update.message.reply_text("Si us plau, envia la localització on es troba.")
     return LOCATION
 
 def set_location_handler_state(update: Update, context: CallbackQuery):
@@ -208,6 +223,11 @@ def set_location_handler_state(update: Update, context: CallbackQuery):
     logging.info("Location of %s: %f / %f", user.first_name, user_location.latitude,
                  user_location.longitude)
     mockup_users_db.set_location(update.message.from_user.id, user_location.longitude, user_location.latitude)
+    kb_markup = ReplyKeyboardRemove()
+    context.bot.send_message(chat_id=update.message.chat_id, 
+                            text="Ja tenim tot el que necessitem. Benvingut a UEPA!",
+                            reply_markup=kb_markup)
+    set_main_menu(update, context)
     return ConversationHandler.END
 
 def cancel_handler_state(update: Update, context: CallbackQuery):
@@ -228,9 +248,10 @@ def main():
 
     global mockup_advertisements_db
     global mockup_users_db
+    global mockup_shops_db
     mockup_advertisements_db = AdvertisementDB('../data/advertisement_test.db')
     mockup_users_db = UsersDB("../data/users_test.db")
-
+    mockup_shops_db = ShopDB("../data/shop_test.db")
 
     global help_buttons
     help_buttons = [[emojize(':pear: Sobre Uepa', use_aliases=True), get_uepa_help], 
@@ -238,7 +259,7 @@ def main():
                     [emojize(':house: Start', use_aliases=True), start]]
 
     global client_actions
-    client_actions = [[emojize(':newspaper: Què es cou?', use_aliases=True), get_ads_handler], 
+    client_actions = [[emojize(':newspaper: Què es cou', use_aliases=True), get_ads_handler], 
                     [emojize(':mag: Cercar', use_aliases=True), search_handler], 
                     [emojize(':bulb: Ajuda', use_aliases=True), help_handler],
                     [emojize(':house_with_garden: El meu barri', use_aliases=True), start]]
@@ -258,8 +279,6 @@ def main():
                     ["Altres", "7"],
                     ["Oci i Cultura", "8"],
                     [emojize(":house: Start"), start]]
-
-
 
     global ad_actions
     ad_actions = [[emojize('contactar'), contact_ad_owner],

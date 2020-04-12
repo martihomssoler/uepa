@@ -2,6 +2,13 @@
 
 import sqlite3
 
+class Shop():
+    def __init__(self, name, phone_number, owner_id, categories):
+        self.name = name
+        self.phone_number = phone_number
+        self.owner_id = owner_id
+        self.categories = categories
+
 class ShopDB():
 
     def __init__(self, file_path):
@@ -15,14 +22,21 @@ class ShopDB():
                             AND name='shops' ''')
         if (self.cursor.fetchone()[0] == 0):
             self.cursor.execute('create table shops (id integer, longitude real, ' + 
-                                'latitude real, name text, description text, categories text)')
+                                'latitude real, name text, description text, ' + 
+                                'categories text, phone_number text)')
         self.connection.commit()
 
     def add(self, shop_id: int, longitude: float, latitude: float):
-        self.cursor.execute('insert into shops (id, longitude, latitude) values (?, ?, ?)', 
+        self.cursor.execute('''insert into shops (id, longitude, latitude) 
+                               values (?, ?, ?)''', 
                              (shop_id, longitude, latitude))
         self.connection.commit()
     
+    def set_phone_number(self, shop_id: int, phone_number: str):
+        self.cursor.execute('update shops set phone_number = ? where id = ?', 
+                            (phone_number,shop_id))
+        self.connection.commit()
+
     def set_name(self, shop_id: int, name: str):
         self.cursor.execute('update shops set name = ? where id = ?', 
                             (name,shop_id))
@@ -52,10 +66,8 @@ class ShopDB():
     
     def get(self, shop_id: int):
         self.cursor.execute('select * from shops where id = ?', (shop_id,))
-        ret_val = []
-        for x in self.cursor.fetchone():
-            ret_val.append(x)
-        return ret_val
+        shop_row = self.cursor.fetchone()
+        return Shop(shop_row[3], shop_row[6], shop_row[0], shop_row[5])
 
     def remove(self, identifier: int):
         self.cursor.execute('''delete from shops where id=?''', (identifier,))
